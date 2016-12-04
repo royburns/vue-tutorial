@@ -22,5 +22,16 @@ export default {
     // 删除某计划
     [types.DELETE_PLAN] (state, idx) {
         state.list.splice(idx, 1);
+    },
+    // 订阅某公众号
+    [types.SUBSCRIBE_MP] (state, mp) {
+        state.mpList.push(
+            // TODO: add subscribe time
+            Object.assign(mp)
+        )
+    },
+    // 删除某公众号
+    [types.UNSUBSCRIBE_MP] (state, idx) {
+        state.mpList.splice(idx, 1);
     }
 };

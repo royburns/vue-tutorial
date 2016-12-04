@@ -1,23 +1,31 @@
 <template>
-  <div id="wrapper">
-    <nav class="navbar navbar-default">
-      <div class="container">
-        <a class="navbar-brand" href="#">
-          <i class="fa fa-clock-o"></i>
-          计划板A
-        </a>
-        <ul class="nav navbar-nav">
-          <li><router-link to="/home">首页</router-link></li>
-          <li><router-link to="/time-entries">计划列表</router-link></li>
-        </ul>
-      </div>
-    </nav>
+  <div id="app">
     <div class="container">
-      <div class="col-sm-3">
+      <nav class="navbar navbar-dark bg-inverse navbar-fixed-top">
+        <router-link to="/" class="navbar-brand text-success"> 简读</router-link>
+        <ul class="nav navbar-nav">
+          <li class="nav-item">
+            <router-link to="/home" class="nav-link"><i class="fa fa-home"></i> Home</router-link>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#"><i class="fa fa-flag"></i> Hot</a>
+          </li>
+        </ul>
+        <form class="form-inline float-xs-right">
+          <input class="form-control" type="text" placeholder="搜索公众号/文章">
+          <router-link to="/search"><i class="fa fa-search btn btn-outline-success" @click=""></i></router-link>
+          <i class="fa fa-user-o btn btn-outline-success"></i>
+        </form>
+      </nav>
+    </div>
+    <div class="container" style="margin-top: 80px">
+      <div class="row">
+        <div class="col-xs-12 col-md-3 push-md-9 col-xl-3 push-xl-9">
           <sidebar></sidebar>
-      </div>
-      <div class="col-sm-9">
-        <router-view></router-view>
+        </div>
+        <div class="col-xs-12 col-md-9 pull-md-3 col-xl-9 pull-xl-3">
+          <router-view></router-view>
+        </div>
       </div>
     </div>
   </div>

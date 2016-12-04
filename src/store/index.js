@@ -8,7 +8,8 @@ Vue.use(Vuex);
 
 const state = {
     totalTime: 0,
-    list: []
+    list: [],
+    mpList: []
 };
 
 export default new Vuex.Store({

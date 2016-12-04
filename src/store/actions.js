@@ -12,5 +12,11 @@ export default {
     },
     deletePlan({ commit }, plan) {
         commit(types.DELETE_PLAN, plan)
+    },
+    subscribeMp({ commit }, mp) {
+        commit(types.SUBSCRIBE_MP, mp)
+    },
+    unsubscribeMp({ commit }, mp) {
+        commit(types.UNSUBSCRIBE_MP, mp)
     }
-};
+}

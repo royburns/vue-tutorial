@@ -1,16 +1,15 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
-import VueResource from 'vue-resource'
 import store from './store'
 
 import App from './App'
 import 'bootstrap/dist/css/bootstrap.css'
 import 'font-awesome/css/font-awesome.css'
 import Home from './components/Home'
+import Search from './components/Search'
 import TimeEntries from './components/TimeEntries'
 
 Vue.use(VueRouter)
-Vue.use(VueResource)
 
 const routes = [{
     path: '/',
@@ -21,11 +20,11 @@ const routes = [{
 },{
     path: '/home',
     // redirect: '/',
-    component: Home,
-    children: [{
-        path: 'like',
-        component: resolve => require(['./components/Like.vue'], resolve)
-    }]
+    component: Home
+},{
+    path: '/search',
+    // redirect: '/',
+    component: Search
 },{
     path: '/time-entries',
     component: TimeEntries,
@@ -40,8 +39,8 @@ const router = new VueRouter( {
 
 /* eslint-disable no-new */
 new Vue({
-  // el: '#app',
-  router,
+    // el: '#app',
+    router,
     store,
     ...App
 }).$mount('#app')
