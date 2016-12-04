@@ -6,6 +6,9 @@
                 <i class="fa fa-search btn btn-lg btn-outline-success" @click="searchMp()"></i>
             </form>
         </div>
+        <div class="card-block" v-if="searchData">
+            <h5 align="center">共有{{ searchData.totalItems }}条搜索结果，共{{searchData.totalPages}}页</h5>
+        </div>
         <div class="card-block" id="searchResult1">
             <div class="media">
                 <div class="media-left imgbox">
@@ -49,7 +52,14 @@
                     </p>
                 </div>
             </div>
-            <!--<a class="list-group-item" v-for="(plan,index) in plans">-->
+            <div class="media" v-for="(mp,index) in searchData.items">
+                {{index}} {{mp}}
+
+                <div class="media-body">
+                {{index}}  {{mp}}
+
+                </div>
+            </div>
         </div>
     </div>
 </template>
@@ -80,24 +90,69 @@
         name : 'SearchResult',
         data() {
             return {
-                searchkey: '',
+                searchKey: '',
                 date : '',
                 totalTime : '',
                 comment : '',
                 mpName: '凤凰网',
-                isSubscribe: false
+                isSubscribe: false,
+                myData: '',
+                searchData: '',
+                searchMpXml: ''
             }
         },
         computed : {
-            mpList () {
+            mpList() {
                 // 从store中取出数据
                 return this.$store.state.mpList
             }
         },
         methods:{
             searchMp() {
-              alert(this.searchKey);
+                this.$http.jsonp("http://weixin.sogou.com/weixinwap?_rtype=json&ie=utf8&type=1",
+                    {
+                        params: {
+                            page: 1,
+                            type: 1, //公众号
+                            query: this.searchKey
+                        },
+                        jsonp:'cb'
+                    }).then(function(res){
+                    this.myData = JSON.parse(res.bodyText).totalItems;
+                    console.log(this.myData);
+                    this.searchData = JSON.parse(res.bodyText);
+                    var xmlstr = this.searchData.items;
+                    this.searchMpXml = new DOMParser().parseFromString(xmlstr, 'text/xml');
+                    this.searchKey = ''
+                },function(){
+                    console.log(1)
+                });
             },
+//                axios.jsonp('http://weixin.sogou.com/weixinwap?page=1&_rtype=json&ie=utf8&type=1&query=' + this.searchKey)
+//                    .then(function (response) {
+//                        console.log(response);
+//                        this.searchKey = '';
+//                    })
+//                    .catch(function (error) {
+//                        console.log(error);
+//                    });
+//                    this.refreshing = true;
+//                    this.$nextTick(function () {    //异步更新队列: 可以在数据变化之后立即更新 DOM
+//                        this.refreshing = true;
+//                        console.log('now is loading:'+this.refreshing) // => 'updated'
+//                    });
+//                    var self = this;
+//                    getJSON('/api/refresh/' + this.table, {
+//                    }, function (err, data) {
+//                        self.last_update = data.last_update;
+//                        self.lz_update = data.lz_update;
+//                        self.refreshing = false;   // 隐藏 refreshing
+//                        self.msg = data.msg;
+//                        this.$nextTick(function () { });
+//
+//                    });
+
+
             subscribe() {
                 const mp = {
                     mpName : this.mpName,

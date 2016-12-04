@@ -1,5 +1,6 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
+import VueResource from 'vue-resource'
 import store from './store'
 
 import App from './App'
@@ -10,6 +11,7 @@ import Search from './components/Search'
 import TimeEntries from './components/TimeEntries'
 
 Vue.use(VueRouter)
+Vue.use(VueResource)
 
 const routes = [{
     path: '/',
@@ -44,3 +46,4 @@ new Vue({
     store,
     ...App
 }).$mount('#app')
+
