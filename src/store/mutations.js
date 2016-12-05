@@ -25,21 +25,61 @@ export default {
     },
     // 订阅某公众号
     [types.SUBSCRIBE_MP] (state, mp) {
-        state.mpList.push(
+        state.subscribeList.push(
             // TODO: add subscribe time
             Object.assign(mp)
         )
+        for(let item of state.mpList) {
+            if(item.weixinhao == mp.weixinhao) {
+                var idx = state.mpList.indexOf(item);
+                state.mpList[idx].isSubscribed = true;
+                break;
+            }
+        }
     },
     // 删除某公众号
-    [types.UNSUBSCRIBE_MP] (state, idx, weixinhao) {
-    	if (weixinhao!='') {
-                for(let item of state.mpList) {
-                    if(item.weixinhao == weixinhao) {
-                    	idx = state.mpList.indexOf(item); 
-                    	break;
-                    }
-                }
-    	}
-        state.mpList.splice(idx, 1);
+    [types.UNSUBSCRIBE_MP] (state, weixinhao) {
+        for(let item of state.mpList) {
+            if(item.weixinhao == weixinhao) {
+                var idx = state.mpList.indexOf(item);
+                state.mpList[idx].isSubscribed = false;
+                break;
+            }
+        }
+
+        for(let item of state.subscribeList) {
+            if(item.weixinhao == weixinhao) {
+                var idx = state.subscribeList.indexOf(item);
+                console.log('unscrib:'+idx);
+                break;
+            }
+        }
+
+        state.subscribeList.splice(idx, 1);
+    },
+    [types.ADD_SEARCHRESULT_LIST] (state, mp) {
+        state.mpList.push(mp);
+    },
+    [types.UNSUBSCRIBE_SEARCHRESULT] (state, weixinhao) {
+        for(let item of state.mpList) {
+            if(item.weixinhao == weixinhao) {
+                var idx = state.mpList.indexOf(item);
+                state.mpList[idx].isSubscribed = false;
+                break;
+            }
+        }
+        for(let item of state.subscribeList) {
+            if(item.weixinhao == weixinhao) {
+                var idx = state.subscribeList.indexOf(item);
+                console.log('unscrib:'+idx);
+                break;
+            }
+        }
+        state.subscribeList.splice(idx, 1);
+    },
+    [types.CLEAR_SEARCHRESULT] (state, info) {
+        console.log('clear search result:' + info);
+        state.subscribeList = [];
     }
+
 };

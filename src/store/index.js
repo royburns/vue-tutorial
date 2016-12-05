@@ -9,7 +9,8 @@ Vue.use(Vuex);
 const state = {
     totalTime: 0,
     list: [],
-    mpList: []
+    mpList: [],         // 搜索结果列表
+    subscribeList: []   // 订阅列表
 };
 
 export default new Vuex.Store({

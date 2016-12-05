@@ -7,16 +7,19 @@
             <p class="card-title">1天前 阅读</p>
         </div>
         <div class="card-block">
-            <p>
-                <img src="http://wx.qlogo.cn/mmhead/Q3auHgzwzM5VP8rbv4fBibDLRoibcezeC7aMx2qs4hfUWtw8Cp6PDZ7Q/0"
-                     class="mpavatar img-circle img-responsive" />
-                <span class="tag tag-danger tag-pill float-xs-right">3</span>
-                科技每日推送
-            </p>
-            <p v-for="(mp,index) in mpList">
-                <img :src="mp.image" class="mpavatar img-circle img-responsive" />
-                <span> {{ mp.mpName }} </span>
-                <a href="javascript:" @click="unsubscribeMp(index, mp.weixinhao)"><i class="fa fa-trash-o float-xs-right text-danger"></i></a>
+            <!--<p>-->
+                <!--<img src="http://wx.qlogo.cn/mmhead/Q3auHgzwzM5VP8rbv4fBibDLRoibcezeC7aMx2qs4hfUWtw8Cp6PDZ7Q/0"-->
+                     <!--class="mpavatar img-circle img-responsive" />-->
+                <!--<span class="tag tag-danger tag-pill float-xs-right">3</span>-->
+                <!--科技每日推送-->
+            <!--</p>-->
+            <p v-for="(mp, idx) in subscribeList" @mouseover="showRemove(idx)" @mouseout="hideRemove(idx)">
+                <span>
+                <a :href="mp.encGzhUrl"><img :src="mp.image" class="mpavatar img-circle img-responsive" />
+                    {{ mp.mpName }}  </a>
+                     <a href="javascript:" @click="unsubscribeMp(mp.weixinhao)">
+                    <i class="fa fa-lg text-danger" :class="{'fa-minus-circle': mp.showRemoveBtn}">&nbsp&nbsp&nbsp</i></a></span>
+
             </p>
         </div>
     </div>
@@ -25,18 +28,30 @@
 <script>
     export default {
         name : 'Sidebar',
+        data() {
+            return {
+                showRemoveBtn: false
+            }
+        },
         computed : {
-            mpList () {
+            subscribeList () {
                 // 从store中取出数据
-                return this.$store.state.mpList
+                return this.$store.state.subscribeList
             }
         },
         methods : {
-            unsubscribeMp(idx=idx, weixinhao='') {
+            unsubscribeMp(weixinhao) {
                 // 删除该公众号
-                this.$store.dispatch('unsubscribeMp',idx, weixinhao)
-            }
-        }
+                return this.$store.dispatch('unsubscribeMp',weixinhao);
+//                return this.$store.dispatch('unsubSearchResult', weixinhao)
+            },
+            showRemove(idx) {
+//                alert(idx);
+                return this.subscribeList[idx]['showRemoveBtn']= true;
+            },
+            hideRemove(idx) {
+                return this.subscribeList[idx]['showRemoveBtn']= false;
+            }        }
     }
 </script>
 
