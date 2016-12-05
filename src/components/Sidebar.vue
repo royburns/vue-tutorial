@@ -15,10 +15,11 @@
             <!--</p>-->
             <p v-for="(mp, idx) in subscribeList" @mouseover="showRemove(idx)" @mouseout="hideRemove(idx)">
                 <span>
-                <a :href="mp.encGzhUrl"><img :src="mp.image" class="mpavatar img-circle img-responsive" />
-                    {{ mp.mpName }}  </a>
+                <a class="nav-link" :href="mp.encGzhUrl" target="_blank">
+                    <img :src="mp.image" class="mpavatar img-circle img-responsive" /> {{ mp.mpName }} </a>
                      <a href="javascript:" @click="unsubscribeMp(mp.weixinhao)">
-                    <i class="fa fa-lg text-danger" :class="{'fa-minus-circle': mp.showRemoveBtn}">&nbsp&nbsp&nbsp</i></a></span>
+                    <i class="fa fa-lg float-xs-right text-danger sidebar-remove"
+                       :class="{'fa-minus-circle': mp.showRemoveBtn}"></i></a></span>
 
             </p>
         </div>
@@ -71,14 +72,9 @@
     .img-circle {
         border-radius: 50%;
     }
-    .sidebar-new:hover {
-        display: none;
-    }
     .sidebar-remove {
-        display: none;
+        margin-top: 8px;
     }
-    .sidebar-remove:hover {
-        display: block;
-    }
+
 
 </style>

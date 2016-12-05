@@ -2,7 +2,8 @@
     <div class="card">
         <div class="card-header" align="center">
             <form class="form-inline">
-                <input class="form-control form-control-lg wide" v-model="searchInput" type="text" placeholder="搜索公众号/文章">
+                <input class="form-control form-control-lg wide" v-model="searchInput" type="text"
+                       @keyup.enter="searchMp()" placeholder="搜索公众号/文章">
                 <i class="fa fa-search btn btn-lg btn-outline-success" @click="searchMp()"></i>
             </form>
         </div>
@@ -20,7 +21,7 @@
                         <img class="media-object rounded " :src="mp.image" style="margin-top: 5px;">
                     </a></div>
                 <div class="media-body">
-                    <a :href="mp.encGzhUrl" target="_blank"><h5 v-html="mp.name"></h5></a>
+                    <a :href="mp.encGzhUrl" target="_blank" class="nav-link"><h5 v-html="mp.name"></h5></a>
                     <p class="" style="margin-bottom: 0px;"><small> 简介：</small><small v-html="mp.summary"></small></p>
                     <p class="text-muted" style="margin-bottom: 0px;">
                         <a href="javascript:" @click="subscribe(index)">
@@ -30,7 +31,7 @@
                         <small class=" s2"> 最近更新 {{ mp.date }} </small></p>
 
                     <p class="text-muted" style="margin-bottom: 30px;"> <small class="text-muted s1">
-                        <a :href="mp.url" target="_blank">{{ mp.title1}}</a>
+                        <a :href="mp.url" target="_blank" class="nav-link">{{ mp.title1}}</a>
                         <span v-html="mp.content"></span> </small> </p>
 
                 </div>
@@ -40,8 +41,9 @@
         <div class="card-block" v-if="isSearching">
             <h5 align="center"><i class="fa fa-spinner fa-spin fa-lg fa-fw"></i> 正在搜索公众号</h5>
         </div>
-        <div class="card card-block text-xs-right" v-if="hasNextPage && searchResultJson">
-            <h5 class="btn btn-outline-success" @click="searchMp()"> 下一页 <i class="fa fa-angle-double-right"></i></h5>
+        <div class="card card-block text-xs-right" v-if="hasNextPage && searchResultJson && !isSearching">
+            <h5 class="btn btn-outline-success" @click="searchMp()"> 下一页 ({{page}})
+                <i class="fa fa-angle-double-right"></i></h5>
         </div>
         <div class="card card-block text-xs-right" v-if="!hasNextPage && searchResultJson">
             <h5 class="btn btn-outline-success"> 最后一页了 <i class="fa fa-exclamation-triangle "></i></h5>
@@ -104,8 +106,10 @@
         methods:{
             searchMp() {
                 this.isSearching = true;
-                if (this.page===1) this.searchKey = this.searchInput;
-                this.$store.dispatch('clearSearchResult', 'clear');
+                if (this.page===1) {
+                    this.searchKey = this.searchInput;
+                    this.$store.dispatch('clearSearchResult', 'clear');
+                }
                 this.$nextTick(function () { });
                 this.$http.jsonp("http://weixin.sogou.com/weixinwap?_rtype=json&ie=utf8",
                     {
@@ -160,18 +164,6 @@
                     alert('Sorry, 网络似乎有问题')
                 });
             },
-
-//                    getJSON('/api/refresh/' + this.table, {
-//                    }, function (err, data) {
-//                        self.last_update = data.last_update;
-//                        self.lz_update = data.lz_update;
-//                        self.refreshing = false;   // 隐藏 refreshing
-//                        self.msg = data.msg;
-//                        this.$nextTick(function () { });
-//
-//                    });
-
-
             subscribe(idx) {
                 if (this.mpList[idx].isSubscribed== true ) {
                     // 删除该公众号
