@@ -8,12 +8,6 @@
         </div>
         <div class="card-block">
             <p>
-                <img src="http://wx.qlogo.cn/mmhead/Q3auHgzwzM6FDWDyWSNm2AFBwFV6SFMXa20hjbFlWOyGYFQqrryIPw/0"
-                     class="mpavatar img-circle img-responsive" />
-                <span class="tag tag-danger tag-pill float-xs-right">12</span>
-                创意科技生活
-            </p>
-            <p>
                 <img src="http://wx.qlogo.cn/mmhead/Q3auHgzwzM5VP8rbv4fBibDLRoibcezeC7aMx2qs4hfUWtw8Cp6PDZ7Q/0"
                      class="mpavatar img-circle img-responsive" />
                 <span class="tag tag-danger tag-pill float-xs-right">3</span>
@@ -22,8 +16,7 @@
             <p v-for="(mp,index) in mpList">
                 <img :src="mp.image" class="mpavatar img-circle img-responsive" />
                 <span> {{ mp.mpName }} </span>
-                <span class="tag tag-danger tag-pill float-xs-right">3</span>
-                <a href="javascript:" @click="unsubscribeMp()"><i class="fa fa-trash-o float-xs-right text-danger"></i></a>
+                <a href="javascript:" @click="unsubscribeMp(index, mp.weixinhao)"><i class="fa fa-trash-o float-xs-right text-danger"></i></a>
             </p>
         </div>
     </div>
@@ -39,9 +32,9 @@
             }
         },
         methods : {
-            unsubscribeMp(idx) {
+            unsubscribeMp(idx=idx, weixinhao='') {
                 // 删除该公众号
-                this.$store.dispatch('unsubscribeMp',idx)
+                this.$store.dispatch('unsubscribeMp',idx, weixinhao)
             }
         }
     }

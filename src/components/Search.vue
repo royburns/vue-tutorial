@@ -9,27 +9,8 @@
         <div class="card-block" v-if="searchData">
             <h5 align="center">共有{{ searchData.totalItems }}条搜索结果，共{{searchData.totalPages}}页</h5>
         </div>
-        <div class="card-block" id="searchResult1">
-            <div class="media">
-                <div class="media-left imgbox">
-                    <a class="" href="#">
-                        <img class="media-object rounded"
-                             src="http://dl.bizhi.sogou.com/images/2014/04/22/587880.jpg">
-                    </a></div>
-                <div class="media-body">
+        <div class="card-block">
 
-                    <h4>这个导演的新片，每一部我必二刷</h4>
-                    <p class="text-muted" style="margin-bottom: 0px;">
-                        11月的时候，鱼叔采访了自己的偶像——蒂姆·波顿。并有机会提前看到了他的新片，然后写了一篇推文。今天电影上映，鱼叔去电影院二刷。这一次，又
-                    </p>
-                    <p><small class="text-muted s1">
-                        <span @click="subscribe()"><i class="fa fa-star-o fa-lg float-xs-right text-danger"></i></span>
-                        <i class="fa fa-eye"></i> 2348 </small>
-                        <small class="text-muted"> 	独立鱼电影</small>
-                        <small class="text-muted s2"> 1小时前</small>
-                    </p>
-                </div>
-            </div>
             <div class="media" id="searchResult2">
                 <div class="media-left imgbox">
                     <a class="" href="#">
@@ -37,7 +18,6 @@
                              src="http://wx.qlogo.cn/mmhead/Q3auHgzwzM6FDWDyWSNm2AFBwFV6SFMXa20hjbFlWOyGYFQqrryIPw/0">
                     </a></div>
                 <div class="media-body">
-
                     <h4>现在的段子，不动脑子根本就看不懂</h4>
                     <p class="text-muted" style="margin-bottom: 0px;">
                         周末，姑妈让我帮忙表照顾5岁的表弟，晚上我给他洗澡的时候，女票打来电话。因为手不方便拿，就开了免提，她问:在做什么呢？我说...
@@ -52,12 +32,24 @@
                     </p>
                 </div>
             </div>
-            <div class="media" v-for="(mp,index) in searchData.items">
-                {{index}} {{mp}}
-
+            <div class="media" v-for="(mp,index) in mpResults">
+                <div class="media-left imgbox">
+                    <a class="" href="#">
+                        <img class="media-object rounded " :src="mp.image" style="margin-top: 5px;">
+                    </a></div>
                 <div class="media-body">
-                {{index}}  {{mp}}
-
+                <a :href="mp.encGzhUrl" target="_blank"><h4 v-html="mp.name"></h4></a>
+                    <p class="" style="margin-bottom: 0px;"> 简介：<small v-html="mp.summary"></small></p>
+                    <p class="text-muted" style="margin-bottom: 0px;">
+                     <a href="javascript:" @click="subscribe(index)">
+                            <i class="fa fa-lg float-xs-right text-danger"
+                               :class="{'fa-star': mp.isSubscribe, 'fa-star-o': ! mp.isSubscribe,}"></i></a>
+                      <small><i class="fa fa-eye"></i> 1181 </small>
+                        <small class=" s2"> 最近更新 {{ mp.date }} </small></p>
+                        
+                 <p class="text-muted" style="margin-bottom: 30px;"> <small class="text-muted s1"> <a :href="mp.url" target="_blank">{{ mp.title1}}</a>
+                  <span v-html="mp.content"></span> </small> </p>
+  
                 </div>
             </div>
         </div>
@@ -70,7 +62,7 @@
     }
     .imgbox {
         width: 100px;
-        height: 120px;
+        height: 140px;
         overflow: hidden;
     }
     .imgbox img{
@@ -98,7 +90,8 @@
                 isSubscribe: false,
                 myData: '',
                 searchData: '',
-                searchMpXml: ''
+                searchMpXml: '',
+                mpResults: []
             }
         },
         computed : {
@@ -119,13 +112,41 @@
                         jsonp:'cb'
                     }).then(function(res){
                     this.myData = JSON.parse(res.bodyText).totalItems;
-                    console.log(this.myData);
+   //                 console.log(this.myData);
                     this.searchData = JSON.parse(res.bodyText);
-                    var xmlstr = this.searchData.items;
-                    this.searchMpXml = new DOMParser().parseFromString(xmlstr, 'text/xml');
+                    var mpXmls = this.searchData.items;
+                     var i, xmlDoc, mpResult;
+                    for (i in mpXmls) {
+                   	mpResult = {}
+                                 xmlDoc = new DOMParser().parseFromString(mpXmls[i], 'text/xml');
+ 			mpResult['title'] = xmlDoc.getElementsByTagName("title")[1].childNodes[0].nodeValue; 
+			mpResult['name'] = xmlDoc.getElementsByTagName("name")[0].childNodes[0].nodeValue.replace('', '<span class="text-success">').replace('', '</span>'); 
+			mpResult['summary'] = xmlDoc.getElementsByTagName("summary")[0].childNodes[0].nodeValue.replace('', '<span class="text-success">').replace('', '</span>'); 
+			mpResult['encGzhUrl'] = xmlDoc.getElementsByTagName("encGzhUrl")[0].childNodes[0].nodeValue; 	// 主页链接
+			try 	{ 
+				mpResult['url'] = xmlDoc.getElementsByTagName("url")[2].childNodes[0].nodeValue; 		// 最新更新文章
+				mpResult['title1'] = xmlDoc.getElementsByTagName("title1")[0].childNodes[0].nodeValue; 
+			} 
+			catch (e) 	{ 
+				mpResult['url'] =  '';
+				mpResult['title1'] =  ''
+			} 
+			try 	{ 
+			mpResult['content'] = xmlDoc.getElementsByTagName("content")[0].childNodes[0].nodeValue.replace('', '<span class="text-success">').replace('', '</span>'); 
+			} 
+			catch (e) 	{ 
+				mpResult['content'] = ''
+			} 
+  			
+ 			mpResult['date'] = xmlDoc.getElementsByTagName("date")[1].childNodes[0].nodeValue; 
+            		mpResult['image'] = xmlDoc.getElementsByTagName("image")[0].childNodes[0].nodeValue; 	
+            		mpResult['weixinhao'] = xmlDoc.getElementsByTagName("weixinhao")[0].childNodes[0].nodeValue; 	
+            		mpResult['isSubscribe'] = false;
+                    	this.mpResults.push(mpResult);	
+                    }
                     this.searchKey = ''
                 },function(){
-                    console.log(1)
+                    console.log('searchMp error')
                 });
             },
 //                axios.jsonp('http://weixin.sogou.com/weixinwap?page=1&_rtype=json&ie=utf8&type=1&query=' + this.searchKey)
@@ -153,19 +174,25 @@
 //                    });
 
 
-            subscribe() {
-                const mp = {
-                    mpName : this.mpName,
-                    image : 'https://sfault-avatar.b0.upaiyun.com/888/223/888223038-5646dbc28d530_huge256',
-                    date : this.date,
-                    totalTime : this.totalTime,
-                    comment : this.comment
+            subscribe(idx) {
+  	if (this.mpResults[idx].isSubscribe== true ) {
+  	               // 删除该公众号
+                 this.mpResults[idx].isSubscribe = false;
+                return this.$store.dispatch('unsubscribeMp', '', this.mpResults[idx].weixinhao)
+            };
+            
+                var mp = {
+                    mpName : this.mpResults[idx].title,
+                    image : this.mpResults[idx].image,
+                    date : this.mpResults[idx].date,
+                    weixinhao : this.mpResults[idx].weixinhao,
+                    subscribeDate : new Date().getTime()
                 };
                 for(let item of this.mpList) {
                     if(item.mpName == mp.mpName) return false
                 }
                 this.$store.dispatch('subscribeMp', mp);
-                this.isSubscribe = true;
+                this.mpResults[idx].isSubscribe = true;
 //                this.$store.dispatch('addTotalTime', this.totalTime);
 //                this.$router.go(-1)
             }

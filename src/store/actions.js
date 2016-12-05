@@ -16,7 +16,7 @@ export default {
     subscribeMp({ commit }, mp) {
         commit(types.SUBSCRIBE_MP, mp)
     },
-    unsubscribeMp({ commit }, mp) {
-        commit(types.UNSUBSCRIBE_MP, mp)
+	    unsubscribeMp({ commit }, idx, weixinhao) {
+        commit(types.UNSUBSCRIBE_MP, idx, weixinhao)
     }
 }

@@ -31,7 +31,15 @@ export default {
         )
     },
     // 删除某公众号
-    [types.UNSUBSCRIBE_MP] (state, idx) {
+    [types.UNSUBSCRIBE_MP] (state, idx, weixinhao) {
+    	if (weixinhao!='') {
+                for(let item of state.mpList) {
+                    if(item.weixinhao == weixinhao) {
+                    	idx = state.mpList.indexOf(item); 
+                    	break;
+                    }
+                }
+    	}
         state.mpList.splice(idx, 1);
     }
 };
