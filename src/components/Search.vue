@@ -3,15 +3,16 @@
         <div class="card-header" align="center">
             <form class="form-inline">
                 <input class="form-control form-control-lg wide" v-model="searchInput" type="text"
-                       @keyup.enter="searchMp()" placeholder="搜索公众号/文章">
-                <i class="fa fa-search btn btn-lg btn-outline-success" @click="searchMp()"></i>
+                       @keyup.enter="searchMp(1)" placeholder="搜索公众号">
+                       <button type="button" class="btn btn-outline-success btn-lg" :disabled="searchInput==''"
+                       @click="searchMp(1)" ><i class="fa fa-search"></i></button>
             </form>
         </div>
          <div class="card-block" v-if="!isSearching && !searchResultJson">
             <h5 align="center" class="text-muted">输入关键字，搜索公众号</h5>
         </div>
         <div class="card-block" v-if="searchResultJson">
-            <h5 align="center" class="text-muted">搜索到{{searchResultJson.totalItems}}条结果，共{{searchResultJson.totalPages}}页</h5>
+            <h6 align="center" class="text-muted">"{{ searchKey}}" 搜索到{{searchResultJson.totalItems}}条结果，共{{searchResultJson.totalPages}}页</h6>
         </div>
 
         <div class="card-block">
@@ -42,7 +43,7 @@
             <h5 align="center"><i class="fa fa-spinner fa-spin fa-lg fa-fw"></i> 正在搜索公众号</h5>
         </div>
         <div class="card card-block text-xs-right" v-if="hasNextPage && searchResultJson && !isSearching">
-            <h5 class="btn btn-outline-success" @click="searchMp()"> 下一页 ({{page}})
+            <h5 class="btn btn-outline-success" @click="searchMp(page)"> 下一页 ({{page}})
                 <i class="fa fa-angle-double-right"></i></h5>
         </div>
         <div class="card card-block text-xs-right" v-if="!hasNextPage && searchResultJson">
@@ -104,17 +105,18 @@
             }
         },
         methods:{
-            searchMp() {
+            searchMp(pg) {
                 this.isSearching = true;
-                if (this.page===1) {
+                if (pg==1) {
                     this.searchKey = this.searchInput;
                     this.$store.dispatch('clearSearchResult', 'clear');
+                                        this.page = 1;
                 }
                 this.$nextTick(function () { });
                 this.$http.jsonp("http://weixin.sogou.com/weixinwap?_rtype=json&ie=utf8",
                     {
                         params: {
-                            page: this.page,
+                            page: pg,
                             type: 1, //公众号
                             query: this.searchKey
                         },
@@ -124,26 +126,29 @@
                     //                 console.log(this.myData);
                     this.searchResultJson = JSON.parse(res.bodyText);
                     var mpXmls = this.searchResultJson.items;
-                    var i, xmlDoc, mpResult;
+                    var i, xmlDoc, mpResult, onePageResults=[];
                     for (i in mpXmls) {
                         mpResult = {};
                         xmlDoc = new DOMParser().parseFromString(mpXmls[i], 'text/xml');
                         mpResult['title'] = xmlDoc.getElementsByTagName("title")[1].childNodes[0].nodeValue;
                         mpResult['name'] = xmlDoc.getElementsByTagName("name")[0].childNodes[0].nodeValue.replace('', '<span class="text-success">').replace('', '</span>');
-                        mpResult['summary'] = xmlDoc.getElementsByTagName("summary")[0].childNodes[0].nodeValue.replace('', '<span class="text-success">').replace('', '</span>');
+                        try 	{
+                        mpResult['summary'] = xmlDoc.getElementsByTagName("summary")[0].childNodes[0].nodeValue.replace('', '<span class="text-success">').replace('', '</span>')
+                        }catch (e) 	{
+                            mpResult['summary'] = '无介绍'
+                        }                       
+                        
                         mpResult['encGzhUrl'] = xmlDoc.getElementsByTagName("encGzhUrl")[0].childNodes[0].nodeValue; 	// 主页链接
                         try 	{
                             mpResult['url'] = xmlDoc.getElementsByTagName("url")[2].childNodes[0].nodeValue; 		// 最新更新文章
                             mpResult['title1'] = xmlDoc.getElementsByTagName("title1")[0].childNodes[0].nodeValue;
-                        }
-                        catch (e) 	{
+                        }                        catch (e) 	{
                             mpResult['url'] =  '';
                             mpResult['title1'] =  ''
                         }
                         try 	{
                             mpResult['content'] = xmlDoc.getElementsByTagName("content")[0].childNodes[0].nodeValue.replace('', '<span class="text-success">').replace('', '</span>');
-                        }
-                        catch (e) 	{
+                        }                        catch (e) 	{
                             mpResult['content'] = ''
                         }
 
@@ -151,8 +156,16 @@
                         mpResult['image'] = xmlDoc.getElementsByTagName("image")[0].childNodes[0].nodeValue;
                         mpResult['weixinhao'] = xmlDoc.getElementsByTagName("weixinhao")[0].childNodes[0].nodeValue;
                         mpResult['isSubscribed'] = false;
-                        this.$store.dispatch('addSearchResultList', mpResult);
+                        for(let item of this.subscribeList) {
+                    if(item.weixinhao == mpResult['weixinhao'] ) {
+                    mpResult['isSubscribed'] = true;
+                    break
                     }
+                }
+                        
+                        onePageResults.push(mpResult);
+                    }
+                    this.$store.dispatch('addSearchResultList', onePageResults);
                     this.searchInput = '';
                     this.page = this.page+1;
                     if (this.page > this.searchResultJson.totalPages) {

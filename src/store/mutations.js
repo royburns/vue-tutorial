@@ -57,8 +57,8 @@ export default {
 
         state.subscribeList.splice(idx, 1);
     },
-    [types.ADD_SEARCHRESULT_LIST] (state, mp) {
-        state.mpList.push(mp);
+    [types.ADD_SEARCHRESULT_LIST] (state, mps) {
+        state.mpList = state.mpList.concat(mps);
     },
     [types.UNSUBSCRIBE_SEARCHRESULT] (state, weixinhao) {
         for(let item of state.mpList) {
@@ -79,7 +79,7 @@ export default {
     },
     [types.CLEAR_SEARCHRESULT] (state, info) {
         console.log('clear search result:' + info);
-        state.subscribeList = [];
+        state.mpList = [];
     }
 
 };
