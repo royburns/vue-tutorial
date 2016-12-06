@@ -36,6 +36,7 @@ export default {
                 break;
             }
         }
+        window.localStorage.setItem("subscribeList", JSON.stringify(state.subscribeList))
     },
     // 删除某公众号
     [types.UNSUBSCRIBE_MP] (state, weixinhao) {
@@ -46,7 +47,6 @@ export default {
                 break;
             }
         }
-
         for(let item of state.subscribeList) {
             if(item.weixinhao == weixinhao) {
                 var idx = state.subscribeList.indexOf(item);
@@ -54,9 +54,10 @@ export default {
                 break;
             }
         }
-
         state.subscribeList.splice(idx, 1);
+        window.localStorage.setItem("subscribeList", JSON.stringify(state.subscribeList))
     },
+    // 搜索列表更新
     [types.ADD_SEARCHRESULT_LIST] (state, mps) {
         state.mpList = state.mpList.concat(mps);
     },
@@ -77,9 +78,18 @@ export default {
         }
         state.subscribeList.splice(idx, 1);
     },
+    	// 清空搜索列表
     [types.CLEAR_SEARCHRESULT] (state, info) {
         console.log('clear search result:' + info);
         state.mpList = [];
+    },
+    	//从LocalStorage 初始化订阅列表
+    [types.INIT_FROM_LS] (state, info) {
+    	console.log(info + window.localStorage.getItem("subscribeList"));
+    	if (window.localStorage.getItem("subscribeList")) {
+       state.subscribeList = JSON.parse(window.localStorage.getItem("subscribeList")) ;
+ }
+     else state.subscribeList = []
     }
 
 };
