@@ -7,8 +7,6 @@ import actions from './actions'
 Vue.use(Vuex);
 
 const state = {
-    totalTime: 0,
-    list: [],
     mpList: [],         // 搜索结果列表
     subscribeList: []   // 订阅列表
 };

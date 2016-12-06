@@ -27,14 +27,8 @@ const routes = [{
     path: '/search',
     // redirect: '/',
     component: Search
-},{
-    path: '/time-entries',
-    component: TimeEntries,
-    children: [{
-        path: 'log-time',
-        component: resolve => require(['./components/LogTime.vue'], resolve)
-    }]
 }]
+
 const router = new VueRouter( {
     routes
 })

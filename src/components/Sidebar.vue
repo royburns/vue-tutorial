@@ -8,18 +8,18 @@
         </div>
         <div class="card-block">
             <!--<p>-->
-                <!--<img src="http://wx.qlogo.cn/mmhead/Q3auHgzwzM5VP8rbv4fBibDLRoibcezeC7aMx2qs4hfUWtw8Cp6PDZ7Q/0"-->
-                     <!--class="mpavatar img-circle img-responsive" />-->
-                <!--<span class="tag tag-danger tag-pill float-xs-right">3</span>-->
-                <!--科技每日推送-->
+            <!--<img src="http://wx.qlogo.cn/mmhead/Q3auHgzwzM5VP8rbv4fBibDLRoibcezeC7aMx2qs4hfUWtw8Cp6PDZ7Q/0"-->
+            <!--class="mpavatar img-circle img-responsive" />-->
+            <!--<span class="tag tag-danger tag-pill float-xs-right">3</span>-->
+            <!--科技每日推送-->
             <!--</p>-->
             <p v-for="(mp, idx) in subscribeList" @mouseover="showRemove(idx)" @mouseout="hideRemove(idx)">
                 <small>
-                <a class="nav-link" :href="mp.encGzhUrl" target="_blank">
-                    <img :src="mp.image" class="mpavatar img-circle img-responsive" /> {{ mp.mpName }} </a>
-                     <a href="javascript:" @click="unsubscribeMp(mp.weixinhao)">
-                    <i class="fa fa-lg float-xs-right text-danger sidebar-remove"
-                       :class="{'fa-minus-circle': mp.showRemoveBtn}"></i></a></small>
+                    <a class="nav-link" :href="mp.encGzhUrl" target="_blank">
+                        <img :src="mp.image" class="mpavatar img-circle img-responsive" /> {{ mp.mpName }} </a>
+                    <a href="javascript:" @click="unsubscribeMp(mp.weixinhao)">
+                        <i class="fa fa-lg float-xs-right text-danger sidebar-remove"
+                           :class="{'fa-minus-circle': mp.showRemoveBtn}"></i></a></small>
 
             </p>
         </div>
@@ -34,10 +34,10 @@
                 showRemoveBtn: false
             }
         },
-         created: function () {
-                // 从LocalStorage中取出数据
-                return this.$store.dispatch('initFromLS', 'init from LS');
-  },
+        created: function () {
+            // 从LocalStorage中取出数据
+            return this.$store.dispatch('initFromLS', 'init from LS');
+        },
         computed : {
             subscribeList () {
                 // 从store中取出数据

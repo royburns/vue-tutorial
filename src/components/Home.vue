@@ -14,11 +14,5 @@
 </template>
 
 <script>
-    export default {
-        computed: {
-            time() {
-                return this.$store.state.totalTime
-            }
-        }
-    }
+
 </script>

@@ -1,19 +1,7 @@
 import * as types from './mutation-types'
 
 export default {
-    addTotalTime({ commit }, time) {
-        commit(types.ADD_TOTAL_TIME, time)
-    },
-    decTotalTime({ commit }, time) {
-        commit(types.DEC_TOTAL_TIME, time)
-    },
-    savePlan({ commit }, plan) {
-        commit(types.SAVE_PLAN, plan);
-    },
-    deletePlan({ commit }, plan) {
-        commit(types.DELETE_PLAN, plan)
-    },
-    subscribeMp({ commit }, mp) {
+     subscribeMp({ commit }, mp) {
         commit(types.SUBSCRIBE_MP, mp)
     },
     unsubscribeMp({ commit }, weixinhao) {
@@ -28,7 +16,7 @@ export default {
     clearSearchResult({ commit }, info) {
         commit(types.CLEAR_SEARCHRESULT, info)
     },
-    	initFromLS({ commit }, info) {
+    initFromLS({ commit }, info) {
         commit(types.INIT_FROM_LS, info)
     }
 

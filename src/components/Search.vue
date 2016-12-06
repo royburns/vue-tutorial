@@ -4,17 +4,16 @@
             <form class="form-inline">
                 <input class="form-control form-control-lg wide" v-model="searchInput" type="text"
                        @keyup.enter="searchMp(1)" placeholder="搜索公众号">
-                       <button type="button" class="btn btn-outline-success btn-lg" :disabled="searchInput==''"
-                       @click="searchMp(1)" ><i class="fa fa-search"></i></button>
+                <button type="button" class="btn btn-outline-success btn-lg" :disabled="searchInput==''"
+                        @click="searchMp(1)" ><i class="fa fa-search"></i></button>
             </form>
         </div>
-         <div class="card-block" v-if="!isSearching && !searchResultJson">
+        <div class="card-block" v-if="!isSearching && !searchResultJson">
             <h5 align="center" class="text-muted">输入关键字，搜索公众号</h5>
         </div>
         <div class="card-block" v-if="searchResultJson">
             <h6 align="center" class="text-muted">"{{ searchKey}}" 搜索到{{searchResultJson.totalItems}}条结果，共{{searchResultJson.totalPages}}页</h6>
         </div>
-
         <div class="card-block">
             <div class="media" v-for="(mp,index) in mpList">
                 <div class="media-left imgbox">
@@ -32,24 +31,21 @@
                         <small title="月平均发表文章" class="s1"><i class="fa fa-file-text-o"></i> {{ mp.rank.pnum }}</small>
                         <small title="平均阅读次数" class="s1"><i class="fa fa-eye"></i> {{ mp.rank.rnum }}</small>
                         <small  title="最近更新" class=" s2"> <i class="fa fa-clock-o"></i> {{ mp.date }} </small></p>
-
                     <p class="text-muted" style="margin-bottom: 30px;"> <small class="text-muted s1">
                         <a :href="mp.url" target="_blank" class="nav-link">{{ mp.title1}}</a>
                         <span v-html="mp.content"></span> </small> </p>
-
                 </div>
             </div>
         </div>
-
         <div class="card-block" v-if="isSearching">
             <h5 align="center"><i class="fa fa-spinner fa-spin fa-lg fa-fw"></i> 正在搜索公众号</h5>
         </div>
         <div class="card card-block text-xs-right" v-if="hasNextPage && searchResultJson && !isSearching">
-            <h5 class="btn btn-outline-success" @click="searchMp(page)"> 下一页 ({{page}})
+            <h5 class="btn btn-outline-success btn-block" @click="searchMp(page)"> 下一页 ({{page}})
                 <i class="fa fa-angle-double-right"></i></h5>
         </div>
         <div class="card card-block text-xs-right" v-if="!hasNextPage && searchResultJson">
-            <h5 class="btn btn-outline-success"> 最后一页了 <i class="fa fa-exclamation-triangle "></i></h5>
+            <h5 class="btn btn-outline-success btn-block"> 最后一页了 <i class="fa fa-exclamation-triangle "></i></h5>
         </div>
     </div>
 </template>
@@ -81,16 +77,8 @@
         data() {
             return {
                 searchKey: '',
-                searchInput: '',
-                date : '',
-                totalTime : '',
-                comment : '',
-                mpName: '凤凰网',
-                isSubscribe: false,
-                myData: '',
+                searchInput: '',    // 输入框的值
                 searchResultJson: '',
-                searchMpXml: '',
-                mpResults: [],
                 isSearching: false,
                 page: 1,
                 hasNextPage: true
@@ -112,7 +100,8 @@
                 if (pg==1) {
                     this.searchKey = this.searchInput;
                     this.$store.dispatch('clearSearchResult', 'clear');
-                                        this.page = 1;
+                    this.page = 1;
+                    this.hasNextPage = true
                 }
                 this.$nextTick(function () { });
                 this.$http.jsonp("http://weixin.sogou.com/weixinwap?_rtype=json&ie=utf8",
@@ -124,8 +113,6 @@
                         },
                         jsonp:'cb'
                     }).then(function(res){
-                    this.myData = JSON.parse(res.bodyText).totalItems;
-                    //                 console.log(this.myData);
                     this.searchResultJson = JSON.parse(res.bodyText);
                     var mpXmls = this.searchResultJson.items;
                     var i, xmlDoc, mpResult, onePageResults=[];
@@ -135,11 +122,11 @@
                         mpResult['title'] = xmlDoc.getElementsByTagName("title")[1].childNodes[0].nodeValue;
                         mpResult['name'] = xmlDoc.getElementsByTagName("name")[0].childNodes[0].nodeValue.replace('', '<span class="text-success">').replace('', '</span>');
                         try 	{
-                        mpResult['summary'] = xmlDoc.getElementsByTagName("summary")[0].childNodes[0].nodeValue.replace('', '<span class="text-success">').replace('', '</span>')
+                            mpResult['summary'] = xmlDoc.getElementsByTagName("summary")[0].childNodes[0].nodeValue.replace('', '<span class="text-success">').replace('', '</span>')
                         }catch (e) 	{
                             mpResult['summary'] = '无介绍'
-                        }                       
-                        
+                        }
+
                         mpResult['encGzhUrl'] = xmlDoc.getElementsByTagName("encGzhUrl")[0].childNodes[0].nodeValue; 	// 主页链接
                         try 	{
                             mpResult['url'] = xmlDoc.getElementsByTagName("url")[2].childNodes[0].nodeValue; 		// 最新更新文章
@@ -156,20 +143,18 @@
                         mpResult['date'] = xmlDoc.getElementsByTagName("date")[1].childNodes[0].nodeValue;
                         mpResult['image'] = xmlDoc.getElementsByTagName("image")[0].childNodes[0].nodeValue;
                         mpResult['weixinhao'] = xmlDoc.getElementsByTagName("weixinhao")[0].childNodes[0].nodeValue;
-                         var rank = xmlDoc.getElementsByTagName("rank")[0].attributes;
-                         mpResult['rank'] = {};
-		mpResult['rank']['fans'] = rank.fans.nodeValue;	// 粉丝数
-  		mpResult['rank']['rnum'] = rank.rnum.nodeValue;	// 月发文 篇    
-  		mpResult['rank']['pnum'] = rank.pnum.nodeValue;	// 平均阅读
-                        
+                        var rank = xmlDoc.getElementsByTagName("rank")[0].attributes;
+                        mpResult['rank'] = {};
+                        mpResult['rank']['fans'] = rank.fans.nodeValue;	// 粉丝数
+                        mpResult['rank']['rnum'] = rank.rnum.nodeValue;	// 月发文 篇
+                        mpResult['rank']['pnum'] = rank.pnum.nodeValue;	// 平均阅读
                         mpResult['isSubscribed'] = false;
                         for(let item of this.subscribeList) {
-                    if(item.weixinhao == mpResult['weixinhao'] ) {
-                    mpResult['isSubscribed'] = true;
-                    break
-                    }
-                }
-                        
+                            if(item.weixinhao == mpResult['weixinhao'] ) {
+                                mpResult['isSubscribed'] = true;
+                                break
+                            }
+                        }
                         onePageResults.push(mpResult);
                     }
                     this.$store.dispatch('addSearchResultList', onePageResults);
@@ -187,9 +172,7 @@
             subscribe(idx) {
                 if (this.mpList[idx].isSubscribed== true ) {
                     // 删除该公众号
-//                    this.mpResults[idx].isSubscribe = false;
                     return this.$store.dispatch('unsubSearchResult',this.mpList[idx].weixinhao);
-//                    return this.$store.dispatch('unsubscribeMp', this.mpList[idx].weixinhao)
                 }
 
                 var mp = {
@@ -206,8 +189,6 @@
                 }
                 this.$store.dispatch('subscribeMp', mp);
                 this.mpList[idx].isSubscribed = true;
-//                this.$store.dispatch('addTotalTime', this.totalTime);
-//                this.$router.go(-1)
             }
         }
     }
