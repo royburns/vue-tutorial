@@ -28,8 +28,10 @@
                         <a href="javascript:" @click="subscribe(index)">
                             <i class="fa fa-lg float-xs-right text-danger"
                                :class="{'fa-star': mp.isSubscribed, 'fa-star-o': !mp.isSubscribed,}"></i></a>
-                        <small><i class="fa fa-eye"></i> 1181 </small>
-                        <small class=" s2"> 最近更新 {{ mp.date }} </small></p>
+                        <small title="粉丝" class="s1"><i class="fa fa-heart-o"></i> {{ mp.rank.fans }} </small>
+                        <small title="月平均发表文章" class="s1"><i class="fa fa-file-text-o"></i> {{ mp.rank.pnum }}</small>
+                        <small title="平均阅读次数" class="s1"><i class="fa fa-eye"></i> {{ mp.rank.rnum }}</small>
+                        <small  title="最近更新" class=" s2"> <i class="fa fa-clock-o"></i> {{ mp.date }} </small></p>
 
                     <p class="text-muted" style="margin-bottom: 30px;"> <small class="text-muted s1">
                         <a :href="mp.url" target="_blank" class="nav-link">{{ mp.title1}}</a>
@@ -151,10 +153,15 @@
                         }                        catch (e) 	{
                             mpResult['content'] = ''
                         }
-
                         mpResult['date'] = xmlDoc.getElementsByTagName("date")[1].childNodes[0].nodeValue;
                         mpResult['image'] = xmlDoc.getElementsByTagName("image")[0].childNodes[0].nodeValue;
                         mpResult['weixinhao'] = xmlDoc.getElementsByTagName("weixinhao")[0].childNodes[0].nodeValue;
+                         var rank = xmlDoc.getElementsByTagName("rank")[0].attributes;
+                         mpResult['rank'] = {};
+		mpResult['rank']['fans'] = rank.fans.nodeValue;	// 粉丝数
+  		mpResult['rank']['rnum'] = rank.rnum.nodeValue;	// 月发文 篇    
+  		mpResult['rank']['pnum'] = rank.pnum.nodeValue;	// 平均阅读
+                        
                         mpResult['isSubscribed'] = false;
                         for(let item of this.subscribeList) {
                     if(item.weixinhao == mpResult['weixinhao'] ) {
