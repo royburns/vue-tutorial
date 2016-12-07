@@ -8,7 +8,6 @@ import 'bootstrap/dist/css/bootstrap.css'
 import 'font-awesome/css/font-awesome.css'
 import Home from './components/Home'
 import Search from './components/Search'
-import TimeEntries from './components/TimeEntries'
 
 Vue.use(VueRouter)
 Vue.use(VueResource)

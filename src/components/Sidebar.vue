@@ -7,12 +7,6 @@
             <p class="card-title">订阅列表</p>
         </div>
         <div class="card-block">
-            <!--<p>-->
-            <!--<img src="http://wx.qlogo.cn/mmhead/Q3auHgzwzM5VP8rbv4fBibDLRoibcezeC7aMx2qs4hfUWtw8Cp6PDZ7Q/0"-->
-            <!--class="mpavatar img-circle img-responsive" />-->
-            <!--<span class="tag tag-danger tag-pill float-xs-right">3</span>-->
-            <!--科技每日推送-->
-            <!--</p>-->
             <p v-for="(mp, idx) in subscribeList" @mouseover="showRemove(idx)" @mouseout="hideRemove(idx)">
                 <small>
                     <a class="nav-link" :href="mp.encGzhUrl" target="_blank">
@@ -30,9 +24,7 @@
     export default {
         name : 'Sidebar',
         data() {
-            return {
-                showRemoveBtn: false
-            }
+            return {}
         },
         created: function () {
             // 从LocalStorage中取出数据
@@ -48,15 +40,14 @@
             unsubscribeMp(weixinhao) {
                 // 删除该公众号
                 return this.$store.dispatch('unsubscribeMp',weixinhao);
-//                return this.$store.dispatch('unsubSearchResult', weixinhao)
             },
             showRemove(idx) {
-//                alert(idx);
                 return this.subscribeList[idx]['showRemoveBtn']= true;
             },
             hideRemove(idx) {
                 return this.subscribeList[idx]['showRemoveBtn']= false;
-            }        }
+            }
+        }
     }
 </script>
 

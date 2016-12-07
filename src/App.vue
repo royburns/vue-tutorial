@@ -20,10 +20,10 @@
     </div>
     <div class="container" style="margin-top: 80px">
       <div class="row">
-        <div class="col-xs-12 col-md-3 push-md-9 col-xl-3 push-xl-9">
+        <div class="col-xs-12 col-md-3 col-xl-3 push-md-9 push-xl-9">
           <sidebar></sidebar>
         </div>
-        <div class="col-xs-12 col-md-9 pull-md-3 col-xl-9 pull-xl-3">
+        <div class="col-xs-12 col-md-9 col-xl-9 pull-md-3 pull-xl-3">
           <router-view></router-view>
         </div>
       </div>

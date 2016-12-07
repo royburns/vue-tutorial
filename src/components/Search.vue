@@ -1,7 +1,7 @@
 <template>
     <div class="card">
         <div class="card-header" align="center">
-            <form class="form-inline">
+            <form class="form-inline" @submit.prevent>
                 <input class="form-control form-control-lg wide" v-model="searchInput" type="text"
                        @keyup.enter="searchMp(1)" placeholder="搜索公众号">
                 <button type="button" class="btn btn-outline-success btn-lg" :disabled="searchInput==''"
@@ -25,8 +25,8 @@
                     <p class="" style="margin-bottom: 0px;"><small> 简介：</small><small v-html="mp.summary"></small></p>
                     <p class="text-muted" style="margin-bottom: 0px;">
                         <a href="javascript:" @click="subscribe(index)">
-                            <i class="fa fa-lg float-xs-right text-danger"
-                               :class="{'fa-star': mp.isSubscribed, 'fa-star-o': !mp.isSubscribed,}"></i></a>
+                            <i class="fa fa-lg float-xs-right"
+                               :class="{'fa-star text-danger': mp.isSubscribed, 'fa-star-o text-muted': !mp.isSubscribed,}"></i></a>
                         <small title="粉丝" class="s1"><i class="fa fa-heart-o"></i> {{ mp.rank.fans }} </small>
                         <small title="月平均发表文章" class="s1"><i class="fa fa-file-text-o"></i> {{ mp.rank.pnum }}</small>
                         <small title="平均阅读次数" class="s1"><i class="fa fa-eye"></i> {{ mp.rank.rnum }}</small>
@@ -188,7 +188,7 @@
                     if(item.mpName == mp.mpName) return false
                 }
                 this.$store.dispatch('subscribeMp', mp);
-                this.mpList[idx].isSubscribed = true;
+              //  this.mpList[idx].isSubscribed = true;
             }
         }
     }
