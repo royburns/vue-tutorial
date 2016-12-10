@@ -21,4 +21,4 @@ npm run build
 - [Vue 2.0 起步(3) 数据流vuex和LocalStorage实例 - 微信公众号RSS](http://www.jianshu.com/p/fb758398268a)
 
 ## demo
-[http://vue2.heroku.com]()
+[vue2.heroku.com](http://vue2.heroku.com)
