@@ -1,7 +1,12 @@
 from flask import jsonify, request, current_app, url_for
 from . import api
 from ..models import User, Mp
+from flask_jwt import JWT, jwt_required, current_identity
 
+@api.route('/protected')
+@jwt_required()
+def protected():
+    return 'this is JWT protected, user_id: %s' % current_identity
 
 @api.route('/users/<int:id>')
 def get_user(id):
