@@ -1,13 +1,38 @@
 from flask import jsonify, request, current_app, url_for
 from . import api
 from ..models import User, Mp
-from flask_jwt import JWT, jwt_required, current_identity
+from flask_jwt import jwt_required, current_identity
+from .. import db
 
 @api.route('/protected')
 @jwt_required()
 def protected():
     return 'this is JWT protected, user_id: %s' % current_identity
 
+@api.route('/register', methods=['GET', 'POST'])
+def register():
+    username = request.get_json()['username']
+    password = request.get_json()['password']
+    print 'register Header: %s\nusername: %s, password:%s'% (request.headers, username, password)
+    if username <> '' and password <> '':
+        if User.query.filter_by(username=username).first():
+             return jsonify({
+            'status': 'failure',
+            'msg': 'username already exist'
+            })           
+
+        user = User(username=username, password=password)
+        db.session.add(user)
+        db.session.commit()
+        return jsonify({
+        'status': 'success',
+        'msg': 'register OK, please login!'
+        })
+    return jsonify({
+    'status': 'failure',
+    'msg': 'register fail, check username and password.'
+    })
+    
 @api.route('/users/<int:id>')
 def get_user(id):
     user = User.query.get_or_404(id)

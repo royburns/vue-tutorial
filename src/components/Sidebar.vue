@@ -3,16 +3,26 @@
         <div v-if="is_login" class="card-header" align="center">
             <img src="http://avatar.csdn.net/1/E/E/1_kevin_qq.jpg"
                  class="avatar img-circle img-responsive" />
-            <p><strong> 非梦</strong></p>
+            <p><strong v-text="username"></strong>
+            <a href="javascript:" @click="logout()" title="退出">
+                        <i class="fa fa-sign-out float-xs-right"></i></a>
+            </p>
             <p class="card-title">订阅列表</p>
         </div>
          <div v-else class="card-header" align="center">
-        <form class="form">
-          <input class="form-control" name="username" type="text" placeholder="用户名" v-model="username">
-          <input class="form-control" name= "password" type="password" placeholder="密码" v-model="password">
-          <a href="javascript:" @click="login()">登录</a>
-          <router-link to="/search"><i class="fa fa-search btn btn-outline-success" @click=""></i></router-link>
-          <i class="fa fa-user-o btn btn-outline-success"></i>
+        <form class="form" @submit.prevent>
+        <div class="form-group">
+          <input class="form-control" name="username" type="text" placeholder="用户名(3~12字符)" v-model="username" 
+                required pattern="\w{3,12}" />
+          </div>
+          <div class="form-group">
+          <input class="form-control" name= "password" type="password" placeholder="密码(至少4位)" v-model="password" 
+                required pattern="\w{4,}"/>
+          </div>
+          <div class="form-group">
+          <input type="submit" @click="register()" class="btn btn-outline-danger" value="注册"/>
+          <input type="submit" @click="login()" class="btn btn-outline-success" value="登录"/>
+          </div>
         </form>
 	
         </div>
@@ -37,11 +47,18 @@
             return {
             is_login: false,
             username: '',
-            password: ''
+            password: '',
+            token: '',
             }
         },
         created: function () {
             // 从LocalStorage中取出数据
+            if (window.localStorage.getItem("user")) {
+                var userData = JSON.parse(window.localStorage.getItem("user")) ;
+                this.token = userData.token;
+                this.username = userData.username;
+                this.is_login = true
+            }
             return this.$store.dispatch('initFromLS', 'init from LS');
         },
         computed : {
@@ -62,19 +79,62 @@
                 return this.subscribeList[idx]['showRemoveBtn']= false;
             },
             login() {
-            this.$http.options.headers={
-	'Content-Type':'application/json; charset=UTF-8'
-};
-                  this.$http.post("http://localhost:5000/auth",
-                    {	username: this.username,
+//            this.$http.options.headers={
+	//'Content-Type':'application/json; charset=UTF-8'
+//};
+this.$http.post('/auth', 
+//body
+{	username: this.username,
 			password: this.password
-                    }).then(function(res){
-                    alert(JSON.parse(res.bodyText) );
-                },function(){
-                    this.isSearching = false;
-                    alert('Sorry, 网络似乎有问题')
-                });
-            }
+                    },
+                    //options
+                    {  
+    headers: {'Content-Type':'application/json; charset=UTF-8'}
+}                 ).then((response) => {
+    // 响应成功回调
+    var data = response.body;
+    this.token = data.access_token;
+    this.is_login = true;
+    alert(data.access_token);
+    var userData = {'username': this.username, 'token': this.token};
+    window.localStorage.setItem("user", JSON.stringify(userData))
+
+}, (response) => {
+    // 响应错误回调
+    alert('登录出错了！ '+ response.status+ response.statusText)
+});
+            },
+            register() {
+this.$http.post('/api/v1.0/register', 
+//body
+{	username: this.username,
+			password: this.password
+                    },
+                    //options
+                    {  
+       //             emulateHTTP: true,
+    headers: {'Content-Type':'application/json; charset=UTF-8'}
+}                 ).then((response) => {
+    // 响应成功回调
+    var data = response.body;
+    if (data.status=='success') {
+    alert('Success! ' + data.msg)
+    }
+    else {
+        alert(data.msg)
+    }
+    this.username = '';
+    this.password = ''
+}, (response) => {
+    // 响应错误回调
+    alert('注册出错了！ '+ response.status+ response.statusText)
+});
+            },
+            logout() {
+    this.is_login = false;
+    this.token = '';
+    window.localStorage.removeItem("user")
+                }
         }
     }
 </script>
