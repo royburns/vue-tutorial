@@ -138,7 +138,7 @@
                 this.password = ''
             }, (response) => {
                     // 响应错误回调
-                    alert('注册出错了！ '+ response.status+ response.statusText)
+                    alert('注册出错了！ '+ JSON.stringify(response))
                 });
             },
             logout() {
@@ -165,7 +165,8 @@
                     if (response.status == 401) {
                     	alert('登录超时，请重新登录');
                     	this.is_login = false;
-                    	this.password = ''
+                    	this.password = '';
+                    	window.localStorage.removeItem("user")
                     }
                 });            
             }

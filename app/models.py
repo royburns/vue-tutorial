@@ -2,10 +2,9 @@
 from datetime import datetime
 import hashlib
 from werkzeug.security import generate_password_hash, check_password_hash
-from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 from flask import current_app, request, url_for, jsonify
 from flask_login import UserMixin, AnonymousUserMixin
-from . import db, login_manager
+from . import db
 
 # 订阅公众号和User是多对多关系
 class Subscription(db.Model):
@@ -41,10 +40,6 @@ class User(UserMixin, db.Model):
 
     def verify_password(self, password):
         return check_password_hash(self.password_hash, password)
-
-    def generate_reset_token(self, expiration=3600):
-        s = Serializer(current_app.config['SECRET_KEY'], expiration)
-        return s.dumps({'reset': self.id})
 
     def ping(self):
         self.last_seen = datetime.utcnow()
@@ -85,20 +80,6 @@ class User(UserMixin, db.Model):
     def __repr__(self):
         return '<User %r>' % self.username
 
-class AnonymousUser(AnonymousUserMixin):
-    def can(self, permissions):
-        return False
-
-    def is_administrator(self):
-        return False
-
-login_manager.anonymous_user = AnonymousUser
-
-
-@login_manager.user_loader
-def load_user(user_id):
-    return User.query.get(int(user_id))
-
 # 公众号
 class Mp(db.Model):
     __tablename__ = 'mps'
@@ -115,11 +96,9 @@ class Mp(db.Model):
                                cascade='all, delete-orphan')
     def to_json(self):
         json_mp = {
-#            'url': url_for('api.get_post', id=self.id, _external=True),
             'weixinhao': self.weixinhao,
             'image': self.image,
             'summary': self.summary,
-# todo: create articles.py            'articles': jsonify(Articles.query.get_or_404(self.id).to_json()),
             'articles_count': self.articles.count()
         }
         return json_mp
@@ -143,7 +122,7 @@ class Article(db.Model):
     mp_id = db.Column(db.Integer, db.ForeignKey('mps.id'))
 
     def to_json(self):
-        json_comment = {
+        json_article = {
             'url': url_for('api.get_comment', id=self.id, _external=True),
             'post': url_for('api.get_post', id=self.post_id, _external=True),
             'body': self.body,
@@ -152,7 +131,7 @@ class Article(db.Model):
             'author': url_for('api.get_user', id=self.author_id,
                               _external=True),
         }
-        return json_comment
+        return json_article
 
     @staticmethod
     def from_json(json_comment):
