@@ -3,7 +3,7 @@ from datetime import datetime
 import hashlib
 from werkzeug.security import generate_password_hash, check_password_hash
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
-from flask import current_app, request, url_for
+from flask import current_app, request, url_for, jsonify
 from flask_login import UserMixin, AnonymousUserMixin
 from . import db, login_manager
 
@@ -65,6 +65,7 @@ class User(UserMixin, db.Model):
 
     @property
     def subscribed_mps(self):
+    	# SQLAlchemy 过滤器和联结
         return Mp.query.join(Subscription, Subscription.mp_id == Mp.id)\
             .filter(Subscription.subscriber_id == self.id)
 
@@ -113,18 +114,15 @@ class Mp(db.Model):
                                lazy='dynamic',
                                cascade='all, delete-orphan')
     def to_json(self):
-        json_post = {
-            'url': url_for('api.get_post', id=self.id, _external=True),
-            'body': self.body,
-            'body_html': self.body_html,
-            'timestamp': self.timestamp,
-            'author': url_for('api.get_user', id=self.author_id,
-                              _external=True),
-            'comments': url_for('api.get_post_comments', id=self.id,
-                                _external=True),
-            'comment_count': self.comments.count()
+        json_mp = {
+#            'url': url_for('api.get_post', id=self.id, _external=True),
+            'weixinhao': self.weixinhao,
+            'image': self.image,
+            'summary': self.summary,
+# todo: create articles.py            'articles': jsonify(Articles.query.get_or_404(self.id).to_json()),
+            'articles_count': self.articles.count()
         }
-        return json_post
+        return json_mp
 
     @staticmethod
     def from_json(json_post):

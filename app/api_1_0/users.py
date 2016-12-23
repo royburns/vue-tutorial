@@ -1,3 +1,4 @@
+# encoding: utf-8
 from flask import jsonify, request, current_app, url_for
 from . import api
 from ..models import User, Mp
@@ -18,7 +19,7 @@ def register():
         if User.query.filter_by(username=username).first():
              return jsonify({
             'status': 'failure',
-            'msg': 'username already exist'
+            'msg': u'用户名已被占用，换一个吧'
             })           
 
         user = User(username=username, password=password)
