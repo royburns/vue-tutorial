@@ -64,10 +64,12 @@ def profile(length=25, profile_dir=None):
 @manager.command
 def deploy():
     """Run deployment tasks."""
-    from flask_migrate import upgrade
+    from flask_migrate import init, migrate, upgrade
     from app.models import User
 
     # migrate database to latest revision
+    init()
+    migrate()
     upgrade()
 
 if __name__ == '__main__':
