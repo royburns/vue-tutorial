@@ -3,9 +3,21 @@ from datetime import datetime
 import hashlib
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask import current_app, request, url_for, jsonify
-from flask_login import UserMixin, AnonymousUserMixin
+from flask_security import Security, SQLAlchemyUserDatastore, \
+    UserMixin, RoleMixin, login_required, auth_token_required, http_auth_required
 from . import db
 
+roles_users = db.Table('roles_users',
+        db.Column('user_id', db.Integer(), db.ForeignKey('users.id')),
+        db.Column('role_id', db.Integer(), db.ForeignKey('roles.id')))
+
+# superuser, admin, author, editor, user
+class Role(db.Model, RoleMixin):
+	__tablename__ = 'roles'	
+	id = db.Column(db.Integer(), primary_key=True)
+	name = db.Column(db.String(80), unique=True)
+	description = db.Column(db.String(255))
+    
 # 订阅公众号和User是多对多关系
 class Subscription(db.Model):
     __tablename__ = 'subscriptions'
@@ -20,8 +32,19 @@ class Subscription(db.Model):
 class User(UserMixin, db.Model):
     __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
+    email = db.Column(db.String(255), unique=True)
     username = db.Column(db.String(64), unique=True, index=True)
     password_hash = db.Column(db.String(128))
+    password = db.Column(db.String(255))
+    active = db.Column(db.Boolean())
+    confirmed_at = db.Column(db.DateTime())
+    last_login_at = db.Column(db.DateTime())
+    current_login_at = db.Column(db.DateTime())
+    last_login_ip = db.Column(db.String(63))
+    current_login_ip = db.Column(db.String(63))
+    login_count = db.Column(db.Integer)
+    roles = db.relationship('Role', secondary=roles_users,
+                            backref=db.backref('users', lazy='dynamic'))
     member_since = db.Column(db.DateTime(), default=datetime.utcnow)
     last_seen = db.Column(db.DateTime(), default=datetime.utcnow)
     mps = db.relationship('Subscription',
@@ -30,20 +53,20 @@ class User(UserMixin, db.Model):
                                lazy='dynamic',
                                cascade='all, delete-orphan')
 
-    @property
-    def password(self):
-        raise AttributeError('password is not a readable attribute')
-
-    @password.setter
-    def password(self, password):
-        self.password_hash = generate_password_hash(password)
-
-    def verify_password(self, password):
-        return check_password_hash(self.password_hash, password)
-
-    def ping(self):
-        self.last_seen = datetime.utcnow()
-        db.session.add(self)
+#    @property
+#    def password(self):
+#        raise AttributeError('password is not a readable attribute')
+#
+#    @password.setter
+#    def password(self, password):
+#        self.password_hash = generate_password_hash(password)
+#
+#    def verify_password(self, password):
+#        return check_password_hash(self.password_hash, password)
+#
+#    def ping(self):
+#        self.last_seen = datetime.utcnow()
+#        db.session.add(self)
 
     def subscribe(self, mp):
         if not self.is_subscribing(mp):
@@ -70,15 +93,14 @@ class User(UserMixin, db.Model):
             'username': self.username,
             'member_since': self.member_since,
             'last_seen': self.last_seen,
-            'posts': url_for('api.get_user_posts', id=self.id, _external=True),
-            'followed_posts': url_for('api.get_user_followed_posts',
-                                      id=self.id, _external=True),
-            'post_count': self.posts.count()
+#            'posts': url_for('api.get_user_posts', id=self.id, _external=True),
+#            'followed_posts': url_for('api.get_user_followed_posts', id=self.id, _external=True),
+            'mp_count': self.subscribed_mps.count()
         }
         return json_user
 
     def __repr__(self):
-        return '<User %r>' % self.username
+        return '<User %r>' % self.email
 
 # 公众号
 class Mp(db.Model):

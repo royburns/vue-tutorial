@@ -3,7 +3,15 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 
 
 class Config:
-    SECRET_KEY = os.environ.get('SECRET_KEY') or 'hard to guess string'
+    SECRET_KEY = os.environ.get('SECRET_KEY') or 'hard to guess stringasdf45asd5454889'
+    # allow tracing login activities
+    SECURITY_TRACKABLE = True
+    SECURITY_PASSWORD_HASH = 'pbkdf2_sha512'
+    SECURITY_PASSWORD_SALT = 'super-secretasdf54554fadf'
+    # allow register
+    SECURITY_REGISTERABLE = True
+    SECURITY_SEND_REGISTER_EMAIL = False
+
 #    JWT_EXPIRATION_DELTA = datetime.timedelta(seconds=10)
     JWT_EXPIRATION_DELTA = datetime.timedelta(days=1)
     SQLALCHEMY_TRACK_MODIFICATIONS = True

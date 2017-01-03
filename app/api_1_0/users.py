@@ -3,26 +3,32 @@ from flask import jsonify, request, current_app, url_for
 from . import api
 from ..models import User, Mp
 from flask_jwt import jwt_required, current_identity
+from flask_security import auth_token_required
 from .. import db
 
-@api.route('/protected')
+@api.route('/protected2')
 @jwt_required()
-def protected():
+def protected2():
     return 'this is JWT protected, user_id: %s' % current_identity
 
+@api.route('/protected')
+@auth_token_required
+def token_protected():
+	return 'you\'re logged in by Token!'
+    
 @api.route('/register', methods=['GET', 'POST'])
 def register():
     username = request.get_json()['username']
     password = request.get_json()['password']
     print 'register Header: %s\nusername: %s, password:%s'% (request.headers, username, password)
     if username <> '' and password <> '':
-        if User.query.filter_by(username=username).first():
+        if User.query.filter_by(email=username).first():
              return jsonify({
             'status': 'failure',
             'msg': u'用户名已被占用，换一个吧'
             })           
 
-        user = User(username=username, password=password)
+        user = User(email=username, password=password)
         db.session.add(user)
         db.session.commit()
         return jsonify({
@@ -35,6 +41,7 @@ def register():
     })
     
 @api.route('/users/<int:id>')
+@auth_token_required
 def get_user(id):
     user = User.query.get_or_404(id)
     return jsonify(user.to_json())

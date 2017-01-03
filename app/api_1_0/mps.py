@@ -4,13 +4,13 @@ from .. import db
 from ..models import Mp, User
 from . import api
 from flask_jwt import jwt_required, current_identity
-
+from flask_security import auth_token_required
 
 @api.route('/mps/')
-@jwt_required()
+@auth_token_required
 def get_mps():
 	# request.args.items().__str__()
-	username = request.args.get('username')
+	username = request.args.get('email')
 	print username
 	mps = User.query.filter_by(username=username).first().subscribed_mps
 	mps_list = [ mp.to_json() for mp in mps ]

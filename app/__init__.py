@@ -1,38 +1,37 @@
 # encoding: utf-8
-from flask import Flask
+from flask import Flask, abort, redirect, url_for, request
 from flask_sqlalchemy import SQLAlchemy
-from flask_jwt import JWT
 from config import config
+from flask_security import Security, SQLAlchemyUserDatastore, current_user, \
+    UserMixin, RoleMixin, login_required, auth_token_required, http_auth_required
+from flask_security.utils import encrypt_password
+from flask_admin.contrib import sqla
+from flask_admin import Admin, helpers as admin_helpers
 
 db = SQLAlchemy()
 
 # models引用必须在 db/login_manager之后，不然会循环引用
-from .models import User
+from .models import User, Role
 
-def authenticate(username, password):
-    print 'JWT auth argvs:', username, password
-    user = User.query.filter_by(username=username).first()
-    if user is not None and user.verify_password(password):
-        return user
-def identity(payload):
-    print 'JWT payload:', payload
-    user_id = payload['identity']
-    user = User.query.filter_by(id=user_id).first()
-    return user_id if user is not None else None
-jwt = JWT(authentication_handler=authenticate, identity_handler=identity)
+user_datastore = SQLAlchemyUserDatastore(db, User, Role)
+security = Security(datastore=user_datastore)
+
+# Create admin
+admin = Admin(name=u'简读Admin')
 
 def create_app(config_name):
-    app = Flask(__name__)
-    app.config.from_object(config[config_name])
-    config[config_name].init_app(app)
+	app = Flask(__name__)
+	app.config.from_object(config[config_name])
+	config[config_name].init_app(app)
 
-    db.init_app(app)
-    jwt.init_app(app)
+	db.init_app(app)
+	security.init_app(app)
+	admin.init_app(app)
 
-    from .main import main as main_blueprint
-    app.register_blueprint(main_blueprint)
+	from .main import main as main_blueprint
+	app.register_blueprint(main_blueprint)
 
-    from .api_1_0 import api as api_1_0_blueprint
-    app.register_blueprint(api_1_0_blueprint, url_prefix='/api/v1.0')
+	from .api_1_0 import api as api_1_0_blueprint
+	app.register_blueprint(api_1_0_blueprint, url_prefix='/api/v1.0')
 
-    return app
+	return app

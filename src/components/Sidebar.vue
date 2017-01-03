@@ -92,10 +92,20 @@
                 //'Content-Type':'application/json; charset=UTF-8'
 //};
                 if (!this.validation) return;
-                this.$http.post('/auth',
+                // get CSRF
+                var csrf_token = '';
+                this.$http.get('/login').then((response) => {
+                    // 响应成功回调
+                   var data = response.body;
+                   alert(JSON.stringify(response));
+                   // <input id="csrf_token" name="csrf_token" type="hidden" value="1483433916##5b057abdef66da070c8385752b78f6c584f6ba41"><input
+                   var csrf_token=data.match(/name="csrf_token" type="hidden" value="(.*?)">/)[1]
+                	alert(csrf_token);
+	          this.$http.post('/login',
                 	//body
-                        {	username: this.username,
-                            password: this.password
+                        {	email: this.username,
+                            password: this.password,
+                            	csrf_token: csrf_token
                         },
                         //options
                         {
@@ -103,23 +113,36 @@
                         }                 ).then((response) => {
                     // 响应成功回调
                     var data = response.body;
-                this.token = data.access_token;
+                    alert(JSON.stringify(data));
+                this.token = data.authentication_token;
                 this.is_login = true;
    //             alert(data.access_token);
                 var userData = {'username': this.username, 'token': this.token};
                 window.localStorage.setItem("user", JSON.stringify(userData))
-
             }, (response) => {
-                    // 响应错误回调
+                    // 响应Login-POST错误回调
                     alert('登录出错了！ '+ response.status+ response.statusText)
+                });
+            }, (response) => {
+                    // 响应login-GET 错误回调
+                    alert('登录出错了(CSRF)！ '+ JSON.stringify(response))
                 });
             },
             register() {
                 if (!this.validation) return;
-                this.$http.post('/api/v1.0/register',
+                // get CSRF
+                var csrf_token = '';
+                this.$http.get('/register').then((response) => {
+                    // 响应成功回调
+                   var data = response.body;
+                   // <input id="csrf_token" name="csrf_token" type="hidden" value="1483433916##5b057abdef66da070c8385752b78f6c584f6ba41"><input
+                   var csrf_token=data.match(/name="csrf_token" type="hidden" value="(.*?)">/)[1]
+                	alert(csrf_token);                
+                this.$http.post('/register',
 //body
-                        {	username: this.username,
-                            password: this.password
+                        {	email: this.username,
+                            password: this.password,
+                            	csrf_token: csrf_token
                         },
                         //options
                         {
@@ -127,31 +150,40 @@
                             headers: {'Content-Type':'application/json; charset=UTF-8'}
                         }                 ).then((response) => {
                     // 响应成功回调
-                    var data = response.body;
-                if (data.status=='success') {
-                    alert('Success! ' + data.msg)
-                }
-                else {
-                    alert(data.msg)
-                }
-//    this.username = '';
-                this.password = ''
+                    var data = JSON.stringify(response.body);
+                    alert('Success!'+ JSON.stringify(response));
+               this.token = data.response.user.authentication_token;
+                this.is_login = true;
+             alert(this.token);
+                var userData = {'username': this.username, 'token': this.token};
+                window.localStorage.setItem("user", JSON.stringify(userData))
+ 
             }, (response) => {
                     // 响应错误回调
                     alert('注册出错了！ '+ JSON.stringify(response))
                 });
-            },
+            }, (response) => {
+                    // 响应register-GET 错误回调
+                    alert('注册出错了(CSRF)！ '+ JSON.stringify(response))
+                });
+            },                	
             logout() {
+               this.$http.get('/logout').then((response) => {
+                    // 响应成功回调
                 this.is_login = false;
                 this.password = '';
                 this.token = '';
                 window.localStorage.removeItem("user")
+            }, (response) => {
+                    // 响应错误回调
+                    alert('Logout出错了！ '+ JSON.stringify(response))
+                }); 
             },
             getSubscription() {
                 this.$http.get('/api/v1.0/mps',
 				{	params: { username: this.username }, 
                         	headers: { 'Content-Type': 'application/json; charset=UTF-8',
-                        				'Authorization': 'JWT '+this.token }
+                        				'Authentication-Token': this.token }
                         }                 ).then((response) => {
                     // 响应成功回调
                     var data = response.body, mp;
@@ -168,7 +200,7 @@
                     	this.password = '';
                     	window.localStorage.removeItem("user")
                     }
-                });            
+                }); 
             }
         }
     }

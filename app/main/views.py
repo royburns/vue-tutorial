@@ -1,13 +1,48 @@
+# encoding: utf-8
 from flask import render_template, redirect, url_for, abort, flash, request,\
-    current_app, make_response
-from flask_login import login_required, current_user
+    current_app, make_response, jsonify
+from flask_security import Security, SQLAlchemyUserDatastore, current_user, AnonymousUser, \
+    UserMixin, RoleMixin, login_required, auth_token_required, http_auth_required
+from flask_security.utils import logout_user
 from flask_sqlalchemy import get_debug_queries
 from . import main
 #from .forms import EditProfileForm, EditProfileAdminForm, PostForm, CommentForm
-from .. import db
-from ..models import User, Mp, Article
+from .. import db, admin
+from flask_admin import Admin, BaseView, expose
+from flask_admin.contrib.sqla import ModelView
+from ..models import User, Mp, Article, Role
 #from ..decorators import admin_required, permission_required
+from flask_admin import helpers as admin_helpers
 
+# 后台管理页面的首页
+class MyView(BaseView):
+    @expose('/')
+    def index(self):
+        return self.render('admin/index.html')
+
+# Create customized model view class
+class MyModelView(ModelView):
+    def is_accessible(self):
+        if not current_user.is_active or not current_user.is_authenticated:
+            return False
+        if current_user.has_role('superuser'):
+            return True
+        return False
+    def _handle_view(self, name, **kwargs):
+        """
+        Override builtin _handle_view in order to redirect users when a view is not accessible.
+        """
+        if not self.is_accessible():
+            if current_user.is_authenticated:
+                # permission denied
+                abort(403)
+            else:
+                # login
+                return redirect(url_for('security.login', next=request.url))
+
+# Role/User管理页面，需要Login
+admin.add_view(MyModelView(Role, db.session))
+admin.add_view(MyModelView(User, db.session))
 
 @main.route('/', methods=['GET', 'POST'])
 def index():
@@ -17,6 +52,16 @@ def index():
 @main.route('/__webpack_hmr')
 def npm():
     return redirect('http://localhost:8080/__webpack_hmr')
+
+@main.route('/protected')
+@login_required
+def protected():
+	print current_user.to_json()
+	print ', '.join(['%s:%s' % item for item in current_user.__dict__.items()])
+	if current_user <> AnonymousUser and not current_user.is_active:
+		logout_user()
+		return "you've been logged out!"	
+	return "protected view!"
 
 @main.route('/user/<username>')
 def user(username):
