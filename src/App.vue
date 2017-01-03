@@ -14,7 +14,7 @@
         <form class="form-inline float-xs-right">
           <input class="form-control" type="text" placeholder="搜索公众号/文章">
           <router-link to="/search"><i class="fa fa-search btn btn-outline-success" @click=""></i></router-link>
-          <i class="fa fa-user-o btn btn-outline-success"></i>
+          <a href="/logout" title="退出登录"><i class="fa fa-sign-out btn btn-outline-success"></i>
         </form>
       </nav>
     </div>

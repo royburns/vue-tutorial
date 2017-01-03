@@ -11,6 +11,13 @@ roles_users = db.Table('roles_users',
         db.Column('user_id', db.Integer(), db.ForeignKey('users.id')),
         db.Column('role_id', db.Integer(), db.ForeignKey('roles.id')))
 
+#class Role_User(db.Model):
+ #   __tablename__ = 'roles_users'
+  #  user_id = db.Column(db.Integer, db.ForeignKey('users.id'),
+   #                         primary_key=True)
+    #role_name = db.Column(db.Integer, db.ForeignKey('roles.name'))
+
+
 # superuser, admin, author, editor, user
 class Role(db.Model, RoleMixin):
 	__tablename__ = 'roles'	

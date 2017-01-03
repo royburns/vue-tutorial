@@ -10,9 +10,9 @@ from flask_security import auth_token_required
 @auth_token_required
 def get_mps():
 	# request.args.items().__str__()
-	username = request.args.get('email')
-	print username
-	mps = User.query.filter_by(username=username).first().subscribed_mps
+	email = request.args.get('email')
+	print email
+	mps = User.query.filter_by(email=email).first().subscribed_mps
 	mps_list = [ mp.to_json() for mp in mps ]
 	print mps_list
 	return jsonify(mps_list)

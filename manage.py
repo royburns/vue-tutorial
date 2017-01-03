@@ -14,9 +14,10 @@ if os.path.exists('.env'):
             os.environ[var[0]] = var[1]
 
 from app import create_app, db
-from app.models import User, Subscription, Mp, Article
+from app.models import User, Subscription, Mp, Article, Role
 from flask_script import Manager, Shell
 from flask_migrate import Migrate, MigrateCommand
+from flask_security.utils import encrypt_password
 
 app = create_app(os.getenv('FLASK_CONFIG') or 'default')
 manager = Manager(app)
@@ -65,12 +66,26 @@ def profile(length=25, profile_dir=None):
 def deploy():
     """Run deployment tasks."""
     from flask_migrate import init, migrate, upgrade
-    from app.models import User
 
     # migrate database to latest revision
     init()
     migrate()
     upgrade()
+
+@manager.command
+def initrole():
+    db.session.add(Role(name="superuser"))
+    db.session.add(Role(name="admin"))
+    db.session.add(Role(name="editor"))
+    db.session.add(Role(name="author"))
+    db.session.add(Role(name="user"))
+    pwd = os.getenv('FLASK_ADMIN_PWD') or raw_input("Pls input Flask admin pwd:")
+    db.session.add(User(email="admin", password=encrypt_password(pwd), active=True))
+#    db.session.add(Role_User(user_id="1", role_name="superuser"))
+    db.session.commit()
+    print "Roles added!"
+    
+    
 
 if __name__ == '__main__':
     manager.run()

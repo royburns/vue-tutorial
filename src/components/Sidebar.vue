@@ -28,6 +28,7 @@
                     	value="登录" :disabled="!validation" />
                 </div>
             </form>
+            <a href="javascript:" class="card-title nav-link" @click="getSubscription()">订阅列表</a>
         </div>
         <div class="card-block">
             <p v-for="(mp, idx) in subscribeList" @mouseover="showRemove(idx)" @mouseout="hideRemove(idx)">
@@ -97,10 +98,10 @@
                 this.$http.get('/login').then((response) => {
                     // 响应成功回调
                    var data = response.body;
-                   alert(JSON.stringify(response));
+                //   alert(JSON.stringify(response));
                    // <input id="csrf_token" name="csrf_token" type="hidden" value="1483433916##5b057abdef66da070c8385752b78f6c584f6ba41"><input
                    var csrf_token=data.match(/name="csrf_token" type="hidden" value="(.*?)">/)[1]
-                	alert(csrf_token);
+             //   	alert(csrf_token);
 	          this.$http.post('/login',
                 	//body
                         {	email: this.username,
@@ -112,11 +113,11 @@
                             headers: {'Content-Type':'application/json; charset=UTF-8'}
                         }                 ).then((response) => {
                     // 响应成功回调
-                    var data = response.body;
-                    alert(JSON.stringify(data));
-                this.token = data.authentication_token;
+                    var jsondata = response.body;
+                    alert(JSON.stringify(jsondata));
+                this.token = jsondata.response.user.authentication_token;
                 this.is_login = true;
-   //             alert(data.access_token);
+                alert('token:\n'+ this.token);
                 var userData = {'username': this.username, 'token': this.token};
                 window.localStorage.setItem("user", JSON.stringify(userData))
             }, (response) => {
@@ -181,7 +182,7 @@
             },
             getSubscription() {
                 this.$http.get('/api/v1.0/mps',
-				{	params: { username: this.username }, 
+				{	params: { email: this.username }, 
                         	headers: { 'Content-Type': 'application/json; charset=UTF-8',
                         				'Authentication-Token': this.token }
                         }                 ).then((response) => {
