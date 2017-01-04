@@ -22,7 +22,7 @@ class MyView(BaseView):
         return self.render('admin/index.html')
 
 # Create customized model view class
-class MyModelView(ModelView):
+class MyModelViewBase(ModelView):
 	# 字段（列）格式化
 	# `view` is current administrative view
     # `context` is instance of jinja2.runtime.Context
@@ -35,9 +35,6 @@ class MyModelView(ModelView):
     column_auto_select_related = ObsoleteAttr('column_auto_select_related',
                                               'auto_select_related',
                                               True)
-    column_select_related_list = ObsoleteAttr('column_select_related',
-                                             'list_select_related',
-                                              None)
     column_display_all_relations = True
 
 
@@ -60,12 +57,21 @@ class MyModelView(ModelView):
                 # login
                 return redirect(url_for('security.login', next=request.url))
 
+class MyModelViewUser(MyModelViewBase):
+    #column_select_related_list = ['mps',]
+    # TODO: models.User.mps 加了 dynamic, 则Flask-Admin里显示raw-SQL；不加，则models里的methods出错！
+    pass
+    
+class MyModelViewMp(MyModelViewBase):
+    #column_select_related_list = ['subscribers',]
+    pass
+    
 # Role/User管理页面，需要Login
-admin.add_view(MyModelView(Role, db.session))
-admin.add_view(MyModelView(User, db.session))
-admin.add_view(MyModelView(Mp, db.session))
-admin.add_view(MyModelView(Subscription, db.session))
-admin.add_view(MyModelView(Article, db.session))
+admin.add_view(MyModelViewBase(Role, db.session))
+admin.add_view(MyModelViewUser(User, db.session))
+admin.add_view(MyModelViewMp(Mp, db.session))
+admin.add_view(MyModelViewBase(Subscription, db.session))
+admin.add_view(MyModelViewBase(Article, db.session))
 
 @main.route('/', methods=['GET', 'POST'])
 def index():

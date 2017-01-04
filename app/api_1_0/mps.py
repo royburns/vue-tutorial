@@ -15,6 +15,7 @@ def new_mps():
     Mps = Mp.from_json(request.json)
 #    subscribed_mps = user.subscribed_mps
     subscribed_mps_weixinhao = [i.weixinhao for i in user.subscribed_mps]
+    rsp = []
     for mp in Mps:
 	    mp_sql = Mp.query.filter_by(weixinhao=mp.weixinhao).first()
 #	    print mp.weixinhao,  mp.weixinhao in subscribed_mps_weixinhao
@@ -22,12 +23,17 @@ def new_mps():
 	    if mp_sql is None:
 	    		db.session.add(mp)
 	    		user.subscribe(mp)
+	    		rsp.append(mp.to_json())
 	    		db.session.commit()
 	# 如果用户没有订阅，则订阅
 	    elif not mp.weixinhao in subscribed_mps_weixinhao:
 	    		user.subscribe(mp_sql)
+	    		rsp.append(mp.to_json())
 	    		db.session.commit()
-    return jsonify(mp.to_json()), 201, \
+     # TODO: 删除不再订阅的公众号
+
+            
+    return jsonify(rsp), 201, \
         {'Location': url_for('api.get_mps', id=mp.id, _external=True)}
 
 

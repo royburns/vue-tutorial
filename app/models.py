@@ -31,11 +31,12 @@ class Role(db.Model, RoleMixin):
 # 订阅公众号和User是多对多关系
 class Subscription(db.Model):
     __tablename__ = 'subscriptions'
+    id = db.Column(db.Integer(), primary_key=True)
     # follower_id
     subscriber_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     # followed_id
-    mp_id = db.Column(db.Integer, db.ForeignKey('mps.id'),
-                            primary_key=True)
+    mp_id = db.Column(db.Integer, db.ForeignKey('mps.id'))
+                         #   primary_key=True)
     subscribe_timestamp = db.Column(db.DateTime, default=datetime.utcnow)
 
     def __repr__(self):
@@ -55,7 +56,7 @@ class User(UserMixin, db.Model):
     current_login_ip = db.Column(db.String(63))
     login_count = db.Column(db.Integer)
     roles = db.relationship('Role', secondary=roles_users,
-                            backref=db.backref('users', lazy='dynamic'))
+                            backref=db.backref('users'))#, lazy='dynamic'))
     member_since = db.Column(db.DateTime(), default=datetime.utcnow)
     mps = db.relationship('Subscription',
                                foreign_keys=[Subscription.subscriber_id],
@@ -110,7 +111,7 @@ class User(UserMixin, db.Model):
         return json_user
 
     def __repr__(self):
-        return '<User %r>' % self.email
+        return '<User-%d %r>' % (self.id, self.email)
 
 # 公众号
 class Mp(db.Model):
@@ -123,12 +124,12 @@ class Mp(db.Model):
     mpName = db.Column(db.Text)
     encGzhUrl = db.Column(db.Text)	# 临时主页
     subscribeDate = db.Column(db.DateTime())
-
+    # 如果加了dynamic, Flask-Admin里会显示raw SQL
     articles = db.relationship('Article', backref='mp', lazy='dynamic')
     subscribers = db.relationship('Subscription',
                                foreign_keys=[Subscription.mp_id],
                                backref=db.backref('mp', lazy='joined'),
-                               lazy='dynamic',
+                         #      lazy='dynamic',
                                cascade='all, delete-orphan')
     def to_json(self):
         json_mp = {
@@ -154,7 +155,7 @@ class Mp(db.Model):
         return Mps
 
     def __repr__(self):
-    	return '<Mp %s>' % self.mpName
+    	return '<Mp-%d %s>' % (self.id, self.mpName)
 
 # 公众号的文章
 class Article(db.Model):
@@ -187,7 +188,7 @@ class Article(db.Model):
         return Comment(body=body)
 
     def __repr__(self):
-    	return '<Article %s>' % self.title
+    	return '<Article-%d %s>' % (self.id, self.title)
 
 """
 In [1]: u=User()

@@ -7,8 +7,12 @@
                 <a href="javascript:" @click="logout()" title="退出">
                     <i class="fa fa-sign-out float-xs-right"></i></a>
             </p>
-            <a href="javascript:" class="card-title nav-link" @click="getSubscription()">订阅列表 </a>
-            <a href="javascript:" class="card-title nav-link" @click="uploadSubscription()"><i class="fa fa-upload"> 上传</i></a>    	
+            <p>订阅列表 
+            <a href="javascript:" class="card-title nav-link" @click="getSubscription()">
+            <i class="fa fa-arrow-circle-down" title="下载"></i></a>
+            <a href="javascript:" class="card-title nav-link" @click="uploadSubscription()">
+            <i class="fa fa-arrow-circle-up" title="上传"></i></a>
+            </p>  	
         </div>
         <div v-else class="card-header" align="center">
             <form class="form" @submit.prevent>
@@ -118,9 +122,11 @@
                     alert(JSON.stringify(jsondata));
                 this.token = jsondata.response.user.authentication_token;
                 this.is_login = true;
-                alert('token:\n'+ this.token);
+ //               alert('token:\n'+ this.token);
                 var userData = {'username': this.username, 'token': this.token};
-                window.localStorage.setItem("user", JSON.stringify(userData))
+                window.localStorage.setItem("user", JSON.stringify(userData));
+           //     this.$nextTick(function () { });
+             //   getSubscription()
             }, (response) => {
                     // 响应Login-POST错误回调
                     alert('登录出错了！ '+ response.status+ response.statusText)
@@ -153,12 +159,18 @@
                         }                 ).then((response) => {
                     // 响应成功回调
                     var data = response.body;
-                    alert('Success!'+ JSON.stringify(response));
+                    alert('Server rsp:\n'+ JSON.stringify(response));
+                     //"body":{"meta":{"code":400},"response":{"errors":{"email":["aaa@bbb.com is already associated with an account."]}}},
+                    if (data.meta.code !==200) {
+                        return alert(JSON.stringify(data.response.errors))
+                    }
                this.token = data.response.user.authentication_token;
                 this.is_login = true;
  //            alert(this.token);
                 var userData = {'username': this.username, 'token': this.token};
-                window.localStorage.setItem("user", JSON.stringify(userData))
+                window.localStorage.setItem("user", JSON.stringify(userData));
+                
+             //   getSubscription()
  
             }, (response) => {
                     // 响应错误回调
@@ -182,6 +194,7 @@
                 }); 
             },
             uploadSubscription() {
+                if (this.subscribeList.length === 0) return false;
                 this.$http.post('/api/v1.0/mps',
 				//body
                         {	email: this.username,
@@ -194,11 +207,8 @@
                         }                 ).then((response) => {
                     // 响应成功回调
                     var data = response.body, mp;
-                    alert('订阅号：'+ JSON.stringify(data))
-                    // [{"articles_count":2,"image":null,"summary":null,"weixinhao":"aaa"},{"articles_count":0,"image":null,"summary":null,"weixinhao":"bbb"}]
-                    for (let mp of data) {
-                    	alert('订阅号：'+ mp.weixinhao)
-                    }
+                    alert('成功上传订阅号：\n'+ JSON.stringify(data))
+
             }, (response) => {
                     // 响应错误回调
                     alert('同步出错了！ '+ JSON.stringify(response))
