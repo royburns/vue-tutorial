@@ -24,24 +24,28 @@ class Role(db.Model, RoleMixin):
 	id = db.Column(db.Integer(), primary_key=True)
 	name = db.Column(db.String(80), unique=True)
 	description = db.Column(db.String(255))
+	
+	def __repr__(self):
+		return '<Role %s>' % self.name
     
 # 订阅公众号和User是多对多关系
 class Subscription(db.Model):
     __tablename__ = 'subscriptions'
     # follower_id
-    subscriber_id = db.Column(db.Integer, db.ForeignKey('users.id'),
-                            primary_key=True)
+    subscriber_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     # followed_id
     mp_id = db.Column(db.Integer, db.ForeignKey('mps.id'),
                             primary_key=True)
     subscribe_timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def __repr__(self):
+    	return '<Subscription %d-%d>' % (self.subscriber_id, self.mp_id)
 
 class User(UserMixin, db.Model):
     __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(255), unique=True)
     username = db.Column(db.String(64), unique=True, index=True)
-    password_hash = db.Column(db.String(128))
     password = db.Column(db.String(255))
     active = db.Column(db.Boolean())
     confirmed_at = db.Column(db.DateTime())
@@ -53,7 +57,6 @@ class User(UserMixin, db.Model):
     roles = db.relationship('Role', secondary=roles_users,
                             backref=db.backref('users', lazy='dynamic'))
     member_since = db.Column(db.DateTime(), default=datetime.utcnow)
-    last_seen = db.Column(db.DateTime(), default=datetime.utcnow)
     mps = db.relationship('Subscription',
                                foreign_keys=[Subscription.subscriber_id],
                                backref=db.backref('subscriber', lazy='joined'),
@@ -116,7 +119,11 @@ class Mp(db.Model):
     weixinhao = db.Column(db.Text)
     image = db.Column(db.Text)
     summary = db.Column(db.Text)
-    sync_time = db.Column(db.DateTime, index=True, default=datetime.utcnow)
+    sync_time = db.Column(db.DateTime, index=True, default=datetime.utcnow)	# Search.vue: date
+    mpName = db.Column(db.Text)
+    encGzhUrl = db.Column(db.Text)	# 临时主页
+    subscribeDate = db.Column(db.DateTime())
+
     articles = db.relationship('Article', backref='mp', lazy='dynamic')
     subscribers = db.relationship('Subscription',
                                foreign_keys=[Subscription.mp_id],
@@ -126,18 +133,28 @@ class Mp(db.Model):
     def to_json(self):
         json_mp = {
             'weixinhao': self.weixinhao,
+            'mpName': self.mpName,
             'image': self.image,
             'summary': self.summary,
+            'subscribeDate': self.subscribeDate,
             'articles_count': self.articles.count()
         }
         return json_mp
 
     @staticmethod
     def from_json(json_post):
-        body = json_post.get('body')
-        if body is None or body == '':
-            raise ValidationError('post does not have a body')
-        return Post(body=body)
+        mps = json_post.get('mps')
+        print mps
+        if mps is None or mps == '':
+            raise ('POST does not have mps')
+        Mps = []
+        for mp in mps:
+#        	print mp
+        	Mps.append( Mp(mpName=mp['mpName'], image=mp['image'], weixinhao=mp['weixinhao'] ) )
+        return Mps
+
+    def __repr__(self):
+    	return '<Mp %s>' % self.mpName
 
 # 公众号的文章
 class Article(db.Model):
@@ -168,6 +185,9 @@ class Article(db.Model):
         if body is None or body == '':
             raise ValidationError('comment does not have a body')
         return Comment(body=body)
+
+    def __repr__(self):
+    	return '<Article %s>' % self.title
 
 """
 In [1]: u=User()

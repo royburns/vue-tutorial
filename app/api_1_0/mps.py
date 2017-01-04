@@ -6,6 +6,32 @@ from . import api
 from flask_jwt import jwt_required, current_identity
 from flask_security import auth_token_required
 
+
+@api.route('/mps', methods=['POST'])
+@auth_token_required
+def new_mps():
+    email = request.get_json()['email']
+    user = User.query.filter_by(email=email).first()
+    Mps = Mp.from_json(request.json)
+#    subscribed_mps = user.subscribed_mps
+    subscribed_mps_weixinhao = [i.weixinhao for i in user.subscribed_mps]
+    for mp in Mps:
+	    mp_sql = Mp.query.filter_by(weixinhao=mp.weixinhao).first()
+#	    print mp.weixinhao,  mp.weixinhao in subscribed_mps_weixinhao
+	# 如果不存在这个订阅号，则添加到Mp，并订阅
+	    if mp_sql is None:
+	    		db.session.add(mp)
+	    		user.subscribe(mp)
+	    		db.session.commit()
+	# 如果用户没有订阅，则订阅
+	    elif not mp.weixinhao in subscribed_mps_weixinhao:
+	    		user.subscribe(mp_sql)
+	    		db.session.commit()
+    return jsonify(mp.to_json()), 201, \
+        {'Location': url_for('api.get_mps', id=mp.id, _external=True)}
+
+
+# 还 /mps/ 斜杠的，必须放在 /mps POST后面，不然默认会选择以下GET
 @api.route('/mps/')
 @auth_token_required
 def get_mps():
@@ -16,4 +42,3 @@ def get_mps():
 	mps_list = [ mp.to_json() for mp in mps ]
 	print mps_list
 	return jsonify(mps_list)
-

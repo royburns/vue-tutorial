@@ -25,12 +25,18 @@ export default {
         for(let item of state.subscribeList) {
             if(item.weixinhao == weixinhao) {
                 var idx = state.subscribeList.indexOf(item);
-                console.log('unscrib:'+idx);
+                console.log('unscribe: '+weixinhao);
                 break;
             }
         }
         state.subscribeList.splice(idx, 1);
         window.localStorage.setItem("subscribeList", JSON.stringify(state.subscribeList))
+    },
+    // 清空订阅列表
+    [types.CLEAR_SUBSCRIPTION] (state, info) {
+        console.log('clear subscribe result:' + info);
+        state.subscribeList=[];
+        window.localStorage.removeItem("subscribeList")
     },
     // 搜索列表更新
     [types.ADD_SEARCHRESULT_LIST] (state, mps) {

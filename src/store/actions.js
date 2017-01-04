@@ -7,6 +7,9 @@ export default {
     unsubscribeMp({ commit }, weixinhao) {
         commit(types.UNSUBSCRIBE_MP, weixinhao)
     },
+	clearSubscription({ commit }, info) {
+        commit(types.CLEAR_SUBSCRIPTION, info)
+    },    		
     addSearchResultList({ commit }, mp) {
         commit(types.ADD_SEARCHRESULT_LIST, mp)
     },

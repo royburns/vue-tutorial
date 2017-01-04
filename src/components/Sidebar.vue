@@ -7,7 +7,8 @@
                 <a href="javascript:" @click="logout()" title="退出">
                     <i class="fa fa-sign-out float-xs-right"></i></a>
             </p>
-            <a href="javascript:" class="card-title nav-link" @click="getSubscription()">订阅列表</a>
+            <a href="javascript:" class="card-title nav-link" @click="getSubscription()">订阅列表 </a>
+            <a href="javascript:" class="card-title nav-link" @click="uploadSubscription()"><i class="fa fa-upload"> 上传</i></a>    	
         </div>
         <div v-else class="card-header" align="center">
             <form class="form" @submit.prevent>
@@ -140,7 +141,7 @@
                    var csrf_token=data.match(/name="csrf_token" type="hidden" value="(.*?)">/)[1]
                 	alert(csrf_token);                
                 this.$http.post('/register',
-//body
+				//body
                         {	email: this.username,
                             password: this.password,
                             	csrf_token: csrf_token
@@ -151,11 +152,11 @@
                             headers: {'Content-Type':'application/json; charset=UTF-8'}
                         }                 ).then((response) => {
                     // 响应成功回调
-                    var data = JSON.stringify(response.body);
+                    var data = response.body;
                     alert('Success!'+ JSON.stringify(response));
                this.token = data.response.user.authentication_token;
                 this.is_login = true;
-             alert(this.token);
+ //            alert(this.token);
                 var userData = {'username': this.username, 'token': this.token};
                 window.localStorage.setItem("user", JSON.stringify(userData))
  
@@ -180,6 +181,35 @@
                     alert('Logout出错了！ '+ JSON.stringify(response))
                 }); 
             },
+            uploadSubscription() {
+                this.$http.post('/api/v1.0/mps',
+				//body
+                        {	email: this.username,
+                        	mps: this.subscribeList
+                        },
+                        //options
+                        {
+                        	headers: { 'Content-Type': 'application/json; charset=UTF-8',
+                        				'Authentication-Token': this.token }
+                        }                 ).then((response) => {
+                    // 响应成功回调
+                    var data = response.body, mp;
+                    alert('订阅号：'+ JSON.stringify(data))
+                    // [{"articles_count":2,"image":null,"summary":null,"weixinhao":"aaa"},{"articles_count":0,"image":null,"summary":null,"weixinhao":"bbb"}]
+                    for (let mp of data) {
+                    	alert('订阅号：'+ mp.weixinhao)
+                    }
+            }, (response) => {
+                    // 响应错误回调
+                    alert('同步出错了！ '+ JSON.stringify(response))
+                    if (response.status == 401) {
+                    	alert('登录超时，请重新登录');
+                    	this.is_login = false;
+                    	this.password = '';
+                    	window.localStorage.removeItem("user")
+                    }
+                }); 
+            },
             getSubscription() {
                 this.$http.get('/api/v1.0/mps',
 				{	params: { email: this.username }, 
@@ -187,10 +217,24 @@
                         				'Authentication-Token': this.token }
                         }                 ).then((response) => {
                     // 响应成功回调
-                    var data = response.body, mp;
+                    var data = response.body, mp, found_tag=false;
+                    alert('订阅号 from server：\n'+ JSON.stringify(data));
                     // [{"articles_count":2,"image":null,"summary":null,"weixinhao":"aaa"},{"articles_count":0,"image":null,"summary":null,"weixinhao":"bbb"}]
+   //                 this.$store.dispatch('clearSearchResult', 'clear search result');
+   			for(let item of this.subscribeList) {
+   				this.$store.dispatch('unsubscribeMp', item.weixinhao);
+   			}
+   			this.$store.dispatch('clearSubscription', 'get sublist from Server');
                     for (let mp of data) {
-                    	alert(mp.weixinhao)
+                  //  	    for(let item of this.subscribeList) {
+                	// 如果已经订阅，则跳过
+		//	if(item.weixinhao == mp.weixinhao) { found_tag = true}
+		        //    }
+                  //  	if (! found_tag) {
+                    	mp['showRemoveBtn'] = false;
+                    	this.$store.dispatch('subscribeMp', mp);
+                    //	found_tag = false
+                //	}
                     }
             }, (response) => {
                     // 响应错误回调

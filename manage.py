@@ -14,7 +14,7 @@ if os.path.exists('.env'):
             os.environ[var[0]] = var[1]
 
 from app import create_app, db
-from app.models import User, Subscription, Mp, Article, Role
+from app.models import User, Subscription, Mp, Article, Role, roles_users
 from flask_script import Manager, Shell
 from flask_migrate import Migrate, MigrateCommand
 from flask_security.utils import encrypt_password
@@ -25,8 +25,8 @@ migrate = Migrate(app, db)
 
 
 def make_shell_context():
-    return dict(app=app, db=db, User=User, Subscription=Subscription, Mp=Mp,
-                Article=Article)
+    return dict(app=app, db=db, User=User, Subscription=Subscription, Mp=Mp, Role=Role, 
+                Article=Article, roles_users=roles_users)
 manager.add_command("shell", Shell(make_context=make_shell_context))
 manager.add_command('db', MigrateCommand)
 
@@ -68,7 +68,8 @@ def deploy():
     from flask_migrate import init, migrate, upgrade
 
     # migrate database to latest revision
-    init()
+    try: init()
+    except: pass
     migrate()
     upgrade()
 
@@ -81,7 +82,8 @@ def initrole():
     db.session.add(Role(name="user"))
     pwd = os.getenv('FLASK_ADMIN_PWD') or raw_input("Pls input Flask admin pwd:")
     db.session.add(User(email="admin", password=encrypt_password(pwd), active=True))
-#    db.session.add(Role_User(user_id="1", role_name="superuser"))
+    ins=roles_users.insert().values(user_id="1", role_id="1")
+    db.session.execute(ins)
     db.session.commit()
     print "Roles added!"
     

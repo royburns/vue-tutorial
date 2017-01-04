@@ -10,7 +10,8 @@ from . import main
 from .. import db, admin
 from flask_admin import Admin, BaseView, expose
 from flask_admin.contrib.sqla import ModelView
-from ..models import User, Mp, Article, Role
+from flask_admin._backwards import ObsoleteAttr
+from ..models import User, Mp, Article, Role, Subscription
 #from ..decorators import admin_required, permission_required
 from flask_admin import helpers as admin_helpers
 
@@ -22,12 +23,31 @@ class MyView(BaseView):
 
 # Create customized model view class
 class MyModelView(ModelView):
+	# 字段（列）格式化
+	# `view` is current administrative view
+    # `context` is instance of jinja2.runtime.Context
+    # `model` is model instance
+    # `name` is property name
+    column_formatters = dict(password=lambda v, c, m, p: '**'+m.password[-6:])
+    column_searchable_list = ( Mp.mpName, User.email )
+    column_display_pk = True # optional, but I like to see the IDs in the list
+#    column_list = ('id', 'name', 'parent')
+    column_auto_select_related = ObsoleteAttr('column_auto_select_related',
+                                              'auto_select_related',
+                                              True)
+    column_select_related_list = ObsoleteAttr('column_select_related',
+                                             'list_select_related',
+                                              None)
+    column_display_all_relations = True
+
+
     def is_accessible(self):
         if not current_user.is_active or not current_user.is_authenticated:
             return False
         if current_user.has_role('superuser'):
             return True
         return False
+        
     def _handle_view(self, name, **kwargs):
         """
         Override builtin _handle_view in order to redirect users when a view is not accessible.
@@ -43,6 +63,9 @@ class MyModelView(ModelView):
 # Role/User管理页面，需要Login
 admin.add_view(MyModelView(Role, db.session))
 admin.add_view(MyModelView(User, db.session))
+admin.add_view(MyModelView(Mp, db.session))
+admin.add_view(MyModelView(Subscription, db.session))
+admin.add_view(MyModelView(Article, db.session))
 
 @main.route('/', methods=['GET', 'POST'])
 def index():

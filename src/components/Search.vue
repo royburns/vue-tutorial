@@ -99,7 +99,7 @@
                 this.isSearching = true;
                 if (pg==1) {
                     this.searchKey = this.searchInput;
-                    this.$store.dispatch('clearSearchResult', 'clear');
+                    this.$store.dispatch('clearSearchResult', 'clear search result');
                     this.page = 1;
                     this.hasNextPage = true
                 }
@@ -178,13 +178,14 @@
                 var mp = {
                     mpName : this.mpList[idx].title,
                     image : this.mpList[idx].image,
-                    date : this.mpList[idx].date,
+                    date : this.mpList[idx].date,	// 最近更新
                     weixinhao : this.mpList[idx].weixinhao,
                     encGzhUrl : this.mpList[idx].encGzhUrl,
                     subscribeDate : new Date().getTime(),
                     showRemoveBtn: false
                 };
                 for(let item of this.subscribeList) {
+                	// 如果已经订阅，则什么也不做
                     if(item.mpName == mp.mpName) return false
                 }
                 this.$store.dispatch('subscribeMp', mp);
