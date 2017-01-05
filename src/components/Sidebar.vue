@@ -4,14 +4,15 @@
             <img src="http://avatar.csdn.net/1/E/E/1_kevin_qq.jpg"
                  class="avatar img-circle img-responsive" />
             <p><strong v-text="username"></strong>
-                <a href="javascript:" @click="logout()" title="退出">
+                <a href="javascript:" @click="logout()" title="退出登录">
                     <i class="fa fa-sign-out float-xs-right"></i></a>
             </p>
-            <p>订阅列表 
+            <p>
             <a href="javascript:" class="card-title nav-link" @click="getSubscription()">
-            <i class="fa fa-arrow-circle-down" title="下载"></i></a>
+            <i class="fa fa-arrow-circle-down" title="下载列表"></i></a>
+    			订阅列表 
             <a href="javascript:" class="card-title nav-link" @click="uploadSubscription()">
-            <i class="fa fa-arrow-circle-up" title="上传"></i></a>
+            <i class="fa fa-arrow-circle-up" title="上传列表"></i></a>
             </p>  	
         </div>
         <div v-else class="card-header" align="center">
@@ -23,8 +24,8 @@
                 </div>
                 <div class="form-group">
                     <input class="form-control" name= "password" type="password" placeholder="密码" v-model="password"
-                           required pattern="\w{4,}"/>
-                           <p class="text-muted"><small>至少4位，字母数字下划线</small></p>
+                           required pattern="\w{6,}"/>
+                           <p class="text-muted"><small>至少6位，字母数字下划线</small></p>
                 </div>
                 <div class="form-group clearfix">
                     <input type="submit" @click="register()" class="btn btn-outline-danger float-xs-left" 
@@ -77,7 +78,7 @@
             },
             validation() {
                 var patt1 = /(\w{3,12})/;
-                var patt2 = /(\w{4,})/;
+                var patt2 = /(\w{6,})/;
 //            	alert(this.username + patt1.test(this.username));
                 return patt1.test(this.username) && patt2.test(this.password)
             }
@@ -103,10 +104,19 @@
                 this.$http.get('/login').then((response) => {
                     // 响应成功回调
                    var data = response.body;
-                //   alert(JSON.stringify(response));
+  //                 alert(JSON.stringify(response));
                    // <input id="csrf_token" name="csrf_token" type="hidden" value="1483433916##5b057abdef66da070c8385752b78f6c584f6ba41"><input
-                   var csrf_token=data.match(/name="csrf_token" type="hidden" value="(.*?)">/)[1]
-             //   	alert(csrf_token);
+                   var csrf_token= '';
+			try {
+                   csrf_token = data.match(/name="csrf_token" type="hidden" value="(.*?)">/)[1];
+//                	alert(csrf_token);
+                }
+                catch(exception) {
+                	// 如果已经登陆，则302，redirect to home
+ //               	alert(exception);	// exception: TypeError: Cannot read property '1' of null
+ 				alert('登录异常，请重新登录');
+             		return	window.location = '/logout';
+             	}
 	          this.$http.post('/login',
                 	//body
                         {	email: this.username,
@@ -145,7 +155,7 @@
                    var data = response.body;
                    // <input id="csrf_token" name="csrf_token" type="hidden" value="1483433916##5b057abdef66da070c8385752b78f6c584f6ba41"><input
                    var csrf_token=data.match(/name="csrf_token" type="hidden" value="(.*?)">/)[1]
-                	alert(csrf_token);                
+      //          	alert(csrf_token);                
                 this.$http.post('/register',
 				//body
                         {	email: this.username,
@@ -159,7 +169,7 @@
                         }                 ).then((response) => {
                     // 响应成功回调
                     var data = response.body;
-                    alert('Server rsp:\n'+ JSON.stringify(response));
+          //          alert('Server rsp:\n'+ JSON.stringify(response));
                      //"body":{"meta":{"code":400},"response":{"errors":{"email":["aaa@bbb.com is already associated with an account."]}}},
                     if (data.meta.code !==200) {
                         return alert(JSON.stringify(data.response.errors))

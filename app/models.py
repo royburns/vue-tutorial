@@ -61,7 +61,7 @@ class User(UserMixin, db.Model):
     mps = db.relationship('Subscription',
                                foreign_keys=[Subscription.subscriber_id],
                                backref=db.backref('subscriber', lazy='joined'),
-                               lazy='dynamic',
+                               lazy='dynamic',		# select dynamic subquery
                                cascade='all, delete-orphan')
 
 #    @property
@@ -98,6 +98,19 @@ class User(UserMixin, db.Model):
         return Mp.query.join(Subscription, Subscription.mp_id == Mp.id)\
             .filter(Subscription.subscriber_id == self.id)
 
+    @property
+    def subscribed_mps_str(self):
+        mplist = [] 
+        i = 1
+    	# SQLAlchemy 过滤器和联结
+        mps = Mp.query.join(Subscription, Subscription.mp_id == Mp.id)\
+            .filter(Subscription.subscriber_id == self.id)
+        for mp in mps:
+        		mplist.append('<Mp-%d %s_%s>' % (mp.id, mp.weixinhao, mp.mpName) )
+        		i+=1
+#        return '\n\n'.join(mplist)
+        return mplist
+
     def to_json(self):
         json_user = {
             'url': url_for('api.get_user', id=self.id, _external=True),
@@ -129,7 +142,7 @@ class Mp(db.Model):
     subscribers = db.relationship('Subscription',
                                foreign_keys=[Subscription.mp_id],
                                backref=db.backref('mp', lazy='joined'),
-                         #      lazy='dynamic',
+                               lazy='dynamic',
                                cascade='all, delete-orphan')
     def to_json(self):
         json_mp = {
@@ -153,6 +166,30 @@ class Mp(db.Model):
 #        	print mp
         	Mps.append( Mp(mpName=mp['mpName'], image=mp['image'], weixinhao=mp['weixinhao'] ) )
         return Mps
+
+    @property	# for Flask-Admin column_formatters use
+    def subscribers_str(self):
+        ulist = [] 
+        i = 1
+    	# SQLAlchemy 过滤器和联结
+        users = User.query.join(Subscription, Subscription.subscriber_id == User.id)\
+            .filter(Subscription.mp_id == self.id)
+        for user in users:
+        		ulist.append('<User-%d %s>' % (user.id, user.email) )
+        		i+=1
+#        return '\n\n'.join(mplist)
+        return ulist
+
+    @property
+    def articles_str(self):
+        alist = [] 
+        i = 1
+    	# SQLAlchemy 过滤器
+        articles = Article.query.filter(Article.mp_id == self.id)
+        for a in articles:
+        		alist.append('<Article-%d %s>' % (a.id, a.title) )
+        		i+=1
+        return alist
 
     def __repr__(self):
     	return '<Mp-%d %s>' % (self.id, self.mpName)

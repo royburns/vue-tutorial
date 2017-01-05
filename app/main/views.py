@@ -11,7 +11,7 @@ from .. import db, admin
 from flask_admin import Admin, BaseView, expose
 from flask_admin.contrib.sqla import ModelView
 from flask_admin._backwards import ObsoleteAttr
-from ..models import User, Mp, Article, Role, Subscription
+from ..models import User, Mp, Article, Role, Subscription,  roles_users
 #from ..decorators import admin_required, permission_required
 from flask_admin import helpers as admin_helpers
 
@@ -28,8 +28,6 @@ class MyModelViewBase(ModelView):
     # `context` is instance of jinja2.runtime.Context
     # `model` is model instance
     # `name` is property name
-    column_formatters = dict(password=lambda v, c, m, p: '**'+m.password[-6:])
-    column_searchable_list = ( Mp.mpName, User.email )
     column_display_pk = True # optional, but I like to see the IDs in the list
 #    column_list = ('id', 'name', 'parent')
     column_auto_select_related = ObsoleteAttr('column_auto_select_related',
@@ -60,12 +58,20 @@ class MyModelViewBase(ModelView):
 class MyModelViewUser(MyModelViewBase):
     #column_select_related_list = ['mps',]
     # TODO: models.User.mps 加了 dynamic, 则Flask-Admin里显示raw-SQL；不加，则models里的methods出错！
-    pass
+	column_formatters = dict(
+		password=lambda v, c, m, p: '**'+m.password[-6:],
+		mps=lambda v, c, m, p: (m.subscribed_mps_str),	# '\n\p'.join
+		)
+	column_searchable_list = (User.email, )
     
 class MyModelViewMp(MyModelViewBase):
     #column_select_related_list = ['subscribers',]
-    pass
-    
+	column_formatters = dict(
+		subscribers=lambda v, c, m, p: (m.subscribers_str),	# '\n\p'.join
+		articles=lambda v, c, m, p: (m.articles_str),
+		)
+	column_searchable_list = (Mp.weixinhao, Mp.mpName, )
+
 # Role/User管理页面，需要Login
 admin.add_view(MyModelViewBase(Role, db.session))
 admin.add_view(MyModelViewUser(User, db.session))
