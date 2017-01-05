@@ -52,7 +52,7 @@
 
 <script>
     export default {
-        name : 'Sidebar',
+        name: 'Sidebar',
         data() {
             return {
                 is_login: false,
@@ -61,89 +61,94 @@
                 token: ''
             }
         },
-        created: function () {
+        created: function() {
             // 从LocalStorage中取出数据
             if (window.localStorage.getItem("user")) {
-                var userData = JSON.parse(window.localStorage.getItem("user")) ;
+                var userData = JSON.parse(window.localStorage.getItem("user"));
                 this.token = userData.token;
                 this.username = userData.username;
                 this.is_login = true
             }
             return this.$store.dispatch('initFromLS', 'init from LS');
         },
-        computed : {
-            subscribeList () {
+        computed: {
+            subscribeList() {
                 // 从store中取出数据
                 return this.$store.state.subscribeList
             },
             validation() {
                 var patt1 = /(\w{3,12})/;
                 var patt2 = /(\w{6,})/;
-//            	alert(this.username + patt1.test(this.username));
+                //            	alert(this.username + patt1.test(this.username));
                 return patt1.test(this.username) && patt2.test(this.password)
             }
         },
-        methods : {
+        methods: {
             unsubscribeMp(weixinhao) {
                 // 删除该公众号
-                return this.$store.dispatch('unsubscribeMp',weixinhao);
+                return this.$store.dispatch('unsubscribeMp', weixinhao);
             },
             showRemove(idx) {
-                return this.subscribeList[idx]['showRemoveBtn']= true;
+                return this.subscribeList[idx]['showRemoveBtn'] = true;
             },
             hideRemove(idx) {
-                return this.subscribeList[idx]['showRemoveBtn']= false;
+                return this.subscribeList[idx]['showRemoveBtn'] = false;
             },
             login() {
-//            this.$http.options.headers={
+                //            this.$http.options.headers={
                 //'Content-Type':'application/json; charset=UTF-8'
-//};
+                //};
                 if (!this.validation) return;
                 // get CSRF
                 var csrf_token = '';
                 this.$http.get('/login').then((response) => {
                     // 响应成功回调
-                   var data = response.body;
-  //                 alert(JSON.stringify(response));
-                   // <input id="csrf_token" name="csrf_token" type="hidden" value="1483433916##5b057abdef66da070c8385752b78f6c584f6ba41"><input
-                   var csrf_token= '';
-			try {
-                   csrf_token = data.match(/name="csrf_token" type="hidden" value="(.*?)">/)[1];
-//                	alert(csrf_token);
-                }
-                catch(exception) {
-                	// 如果已经登陆，则302，redirect to home
- //               	alert(exception);	// exception: TypeError: Cannot read property '1' of null
- 				alert('登录异常，请重新登录');
-             		return	window.location = '/logout';
-             	}
-	          this.$http.post('/login',
-                	//body
-                        {	email: this.username,
+                    var data = response.body;
+                    //                 alert(JSON.stringify(response));
+                    // <input id="csrf_token" name="csrf_token" type="hidden" value="1483433916##5b057abdef66da070c8385752b78f6c584f6ba41"><input
+                    var csrf_token = '';
+                    try {
+                        csrf_token = data.match(/name="csrf_token" type="hidden" value="(.*?)">/)[1];
+                        //                	alert(csrf_token);
+                    } catch (exception) {
+                        // 如果已经登陆，则302，redirect to home
+                        //               	alert(exception);	// exception: TypeError: Cannot read property '1' of null
+                        alert('登录异常，请重新登录');
+                        return window.location = '/logout';
+                    }
+                    this.$http.post('/login',
+                        //body
+                        {
+                            email: this.username,
                             password: this.password,
-                            	csrf_token: csrf_token
+                            csrf_token: csrf_token
                         },
                         //options
                         {
-                            headers: {'Content-Type':'application/json; charset=UTF-8'}
-                        }                 ).then((response) => {
-                    // 响应成功回调
-                    var jsondata = response.body;
-                    alert(JSON.stringify(jsondata));
-                this.token = jsondata.response.user.authentication_token;
-                this.is_login = true;
- //               alert('token:\n'+ this.token);
-                var userData = {'username': this.username, 'token': this.token};
-                window.localStorage.setItem("user", JSON.stringify(userData));
-           //     this.$nextTick(function () { });
-             //   getSubscription()
-            }, (response) => {
-                    // 响应Login-POST错误回调
-                    alert('登录出错了！ '+ response.status+ response.statusText)
-                });
-            }, (response) => {
+                            headers: {
+                                'Content-Type': 'application/json; charset=UTF-8'
+                            }
+                        }).then((response) => {
+                        // 响应成功回调
+                        var jsondata = response.body;
+                        alert(JSON.stringify(jsondata));
+                        this.token = jsondata.response.user.authentication_token;
+                        this.is_login = true;
+                        //               alert('token:\n'+ this.token);
+                        var userData = {
+                            'username': this.username,
+                            'token': this.token
+                        };
+                        window.localStorage.setItem("user", JSON.stringify(userData));
+                        //     this.$nextTick(function () { });
+                        //   getSubscription()
+                    }, (response) => {
+                        // 响应Login-POST错误回调
+                        alert('登录出错了！ ' + response.status + response.statusText)
+                    });
+                }, (response) => {
                     // 响应login-GET 错误回调
-                    alert('登录出错了(CSRF)！ '+ JSON.stringify(response))
+                    alert('登录出错了(CSRF)！ ' + JSON.stringify(response))
                 });
             },
             register() {
@@ -152,120 +157,132 @@
                 var csrf_token = '';
                 this.$http.get('/register').then((response) => {
                     // 响应成功回调
-                   var data = response.body;
-                   // <input id="csrf_token" name="csrf_token" type="hidden" value="1483433916##5b057abdef66da070c8385752b78f6c584f6ba41"><input
-                   var csrf_token=data.match(/name="csrf_token" type="hidden" value="(.*?)">/)[1]
-      //          	alert(csrf_token);                
-                this.$http.post('/register',
-				//body
-                        {	email: this.username,
+                    var data = response.body;
+                    // <input id="csrf_token" name="csrf_token" type="hidden" value="1483433916##5b057abdef66da070c8385752b78f6c584f6ba41"><input
+                    var csrf_token = data.match(/name="csrf_token" type="hidden" value="(.*?)">/)[1]
+                    //          	alert(csrf_token);                
+                    this.$http.post('/register',
+                        //body
+                        {
+                            email: this.username,
                             password: this.password,
-                            	csrf_token: csrf_token
+                            csrf_token: csrf_token
                         },
                         //options
                         {
                             //             emulateHTTP: true,
-                            headers: {'Content-Type':'application/json; charset=UTF-8'}
-                        }                 ).then((response) => {
-                    // 响应成功回调
-                    var data = response.body;
-          //          alert('Server rsp:\n'+ JSON.stringify(response));
-                     //"body":{"meta":{"code":400},"response":{"errors":{"email":["aaa@bbb.com is already associated with an account."]}}},
-                    if (data.meta.code !==200) {
-                        return alert(JSON.stringify(data.response.errors))
-                    }
-               this.token = data.response.user.authentication_token;
-                this.is_login = true;
- //            alert(this.token);
-                var userData = {'username': this.username, 'token': this.token};
-                window.localStorage.setItem("user", JSON.stringify(userData));
-                
-             //   getSubscription()
- 
-            }, (response) => {
-                    // 响应错误回调
-                    alert('注册出错了！ '+ JSON.stringify(response))
-                });
-            }, (response) => {
+                            headers: {
+                                'Content-Type': 'application/json; charset=UTF-8'
+                            }
+                        }).then((response) => {
+                        // 响应成功回调
+                        var data = response.body;
+                        //          alert('Server rsp:\n'+ JSON.stringify(response));
+                        //"body":{"meta":{"code":400},"response":{"errors":{"email":["aaa@bbb.com is already associated with an account."]}}},
+                        if (data.meta.code !== 200) {
+                            return alert(JSON.stringify(data.response.errors))
+                        }
+                        this.token = data.response.user.authentication_token;
+                        this.is_login = true;
+                        //            alert(this.token);
+                        var userData = {
+                            'username': this.username,
+                            'token': this.token
+                        };
+                        window.localStorage.setItem("user", JSON.stringify(userData));
+                    }, (response) => {
+                        // 响应错误回调
+                        alert('注册出错了！ ' + JSON.stringify(response))
+                    });
+                }, (response) => {
                     // 响应register-GET 错误回调
-                    alert('注册出错了(CSRF)！ '+ JSON.stringify(response))
+                    alert('注册出错了(CSRF)！ ' + JSON.stringify(response))
                 });
-            },                	
+            },
             logout() {
-               this.$http.get('/logout').then((response) => {
+                this.$http.get('/logout').then((response) => {
                     // 响应成功回调
-                this.is_login = false;
-                this.password = '';
-                this.token = '';
-                window.localStorage.removeItem("user")
-            }, (response) => {
+                    this.is_login = false;
+                    this.password = '';
+                    this.token = '';
+                    window.localStorage.removeItem("user")
+                }, (response) => {
                     // 响应错误回调
-                    alert('Logout出错了！ '+ JSON.stringify(response))
-                }); 
+                    alert('Logout出错了！ ' + JSON.stringify(response))
+                });
             },
             uploadSubscription() {
                 if (this.subscribeList.length === 0) return false;
                 this.$http.post('/api/v1.0/mps',
-				//body
-                        {	email: this.username,
-                        	mps: this.subscribeList
-                        },
-                        //options
-                        {
-                        	headers: { 'Content-Type': 'application/json; charset=UTF-8',
-                        				'Authentication-Token': this.token }
-                        }                 ).then((response) => {
+                    //body
+                    {
+                        email: this.username,
+                        mps: this.subscribeList
+                    },
+                    //options
+                    {
+                        headers: {
+                            'Content-Type': 'application/json; charset=UTF-8',
+                            'Authentication-Token': this.token
+                        }
+                    }).then((response) => {
                     // 响应成功回调
-                    var data = response.body, mp;
-                    alert('成功上传订阅号：\n'+ JSON.stringify(data))
+                    var data = response.body,
+                        mp;
+                    alert('成功上传订阅号：\n' + JSON.stringify(data))
 
-            }, (response) => {
+                }, (response) => {
                     // 响应错误回调
-                    alert('同步出错了！ '+ JSON.stringify(response))
+                    alert('同步出错了！ ' + JSON.stringify(response))
                     if (response.status == 401) {
-                    	alert('登录超时，请重新登录');
-                    	this.is_login = false;
-                    	this.password = '';
-                    	window.localStorage.removeItem("user")
+                        alert('登录超时，请重新登录');
+                        this.is_login = false;
+                        this.password = '';
+                        window.localStorage.removeItem("user")
                     }
-                }); 
+                });
             },
             getSubscription() {
-                this.$http.get('/api/v1.0/mps',
-				{	params: { email: this.username }, 
-                        	headers: { 'Content-Type': 'application/json; charset=UTF-8',
-                        				'Authentication-Token': this.token }
-                        }                 ).then((response) => {
+                this.$http.get('/api/v1.0/mps', {
+                    params: {
+                        email: this.username
+                    },
+                    headers: {
+                        'Content-Type': 'application/json; charset=UTF-8',
+                        'Authentication-Token': this.token
+                    }
+                }).then((response) => {
                     // 响应成功回调
-                    var data = response.body, mp, found_tag=false;
-                    alert('订阅号 from server：\n'+ JSON.stringify(data));
+                    var data = response.body,
+                        mp, found_tag = false;
+                    alert('订阅号 from server：\n' + JSON.stringify(data));
                     // [{"articles_count":2,"image":null,"summary":null,"weixinhao":"aaa"},{"articles_count":0,"image":null,"summary":null,"weixinhao":"bbb"}]
-   //                 this.$store.dispatch('clearSearchResult', 'clear search result');
-   			for(let item of this.subscribeList) {
-   				this.$store.dispatch('unsubscribeMp', item.weixinhao);
-   			}
-   			this.$store.dispatch('clearSubscription', 'get sublist from Server');
+                    //                 this.$store.dispatch('clearSearchResult', 'clear search result');
+                    for (let item of this.subscribeList) {
+                        this.$store.dispatch('unsubscribeMp', item.weixinhao);
+                    }
+                    this.$store.dispatch('clearSubscription', 'get sublist from Server');
                     for (let mp of data) {
-                  //  	    for(let item of this.subscribeList) {
-                	// 如果已经订阅，则跳过
-		//	if(item.weixinhao == mp.weixinhao) { found_tag = true}
-		        //    }
-                  //  	if (! found_tag) {
-                    	mp['showRemoveBtn'] = false;
-                    	this.$store.dispatch('subscribeMp', mp);
-                    //	found_tag = false
-                //	}
+                        //  	    for(let item of this.subscribeList) {
+                        // 如果已经订阅，则跳过
+                        //	if(item.weixinhao == mp.weixinhao) { found_tag = true}
+                        //    }
+                        //  	if (! found_tag) {
+                        mp['showRemoveBtn'] = false;
+                        this.$store.dispatch('subscribeMp', mp);
+                        //	found_tag = false
+                        //	}
                     }
-            }, (response) => {
+                }, (response) => {
                     // 响应错误回调
-                    alert('同步出错了！ '+ JSON.stringify(response))
+                    alert('同步出错了！ ' + JSON.stringify(response))
                     if (response.status == 401) {
-                    	alert('登录超时，请重新登录');
-                    	this.is_login = false;
-                    	this.password = '';
-                    	window.localStorage.removeItem("user")
+                        alert('登录超时，请重新登录');
+                        this.is_login = false;
+                        this.password = '';
+                        window.localStorage.removeItem("user")
                     }
-                }); 
+                });
             }
         }
     }
@@ -278,18 +295,19 @@
         margin-top: 10px;
         margin-bottom: 10px;
     }
+    
     .mpavatar {
         height: 30px;
         margin: 0 auto;
         margin-top: 2px;
         margin-bottom: 2px;
     }
+    
     .img-circle {
         border-radius: 50%;
     }
+    
     .sidebar-remove {
         margin-top: 8px;
     }
-
-
 </style>

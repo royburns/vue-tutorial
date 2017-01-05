@@ -227,6 +227,18 @@ class Article(db.Model):
     def __repr__(self):
     	return '<Article-%d %s>' % (self.id, self.title)
 
+class Alembic(db.Model):
+    __tablename__ = 'alembic_version'
+    version_num = db.Column(db.String(32), primary_key=True, nullable=False)
+
+    @staticmethod
+    def clear_A():
+        for a in Alembic.query.all():
+            print a.version_num
+            db.session.delete(a)
+        db.session.commit()
+        print '======== data in Table: Alembic cleared!'
+
 """
 In [1]: u=User()
 

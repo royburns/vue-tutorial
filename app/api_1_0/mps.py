@@ -3,7 +3,6 @@ from flask import jsonify, request, g, abort, url_for, current_app
 from .. import db
 from ..models import Mp, User
 from . import api
-from flask_jwt import jwt_required, current_identity
 from flask_security import auth_token_required
 
 
@@ -37,7 +36,7 @@ def new_mps():
         {'Location': url_for('api.get_mps', id=mp.id, _external=True)}
 
 
-# 还 /mps/ 斜杠的，必须放在 /mps POST后面，不然默认会选择以下GET
+# 带 /mps/ 斜杠的，必须放在 /mps POST后面，不然默认会选择以下GET
 @api.route('/mps/')
 @auth_token_required
 def get_mps():

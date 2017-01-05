@@ -14,7 +14,7 @@ if os.path.exists('.env'):
             os.environ[var[0]] = var[1]
 
 from app import create_app, db
-from app.models import User, Subscription, Mp, Article, Role, roles_users
+from app.models import User, Subscription, Mp, Article, Role, roles_users, Alembic
 from flask_script import Manager, Shell
 from flask_migrate import Migrate, MigrateCommand
 from flask_security.utils import encrypt_password
@@ -74,6 +74,17 @@ def deploy():
     upgrade()
 
 @manager.command
+def dropall():
+    db.drop_all()
+    print "all tables dropped! remember to delete directory: migrations"
+
+@manager.command
+def clear_A():
+	# heroku db upgrade，且保留原来数据
+    Alembic.clear_A()
+    print "Alembic content cleared"
+
+@manager.command
 def initrole():
     db.session.add(Role(name="superuser"))
     db.session.add(Role(name="admin"))
@@ -82,6 +93,8 @@ def initrole():
     db.session.add(Role(name="user"))
     pwd = os.getenv('FLASK_ADMIN_PWD') or raw_input("Pls input Flask admin pwd:")
     db.session.add(User(email="admin", password=encrypt_password(pwd), active=True))
+    # Heroku postgres 必须先commit，再添加以下roles_users关系
+    db.session.commit()
     ins=roles_users.insert().values(user_id="1", role_id="1")
     db.session.execute(ins)
     db.session.commit()
