@@ -8,7 +8,7 @@
             <router-link to="/home" class="nav-link"><i class="fa fa-home"></i> Home</router-link>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="#"><i class="fa fa-flag"></i> Hot</a>
+    		<router-link to="/articles" class="nav-link"><i class="fa fa-flag"></i>订阅文章</router-link>
           </li>
         </ul>
         <form class="form-inline float-xs-right">

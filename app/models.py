@@ -131,6 +131,7 @@ class Mp(db.Model):
     __tablename__ = 'mps'
     id = db.Column(db.Integer, primary_key=True)
     weixinhao = db.Column(db.Text)
+    openid = db.Column(db.Text)
     image = db.Column(db.Text)
     summary = db.Column(db.Text)
     sync_time = db.Column(db.DateTime, index=True, default=datetime.utcnow)	# Search.vue: date
@@ -150,6 +151,8 @@ class Mp(db.Model):
             'mpName': self.mpName,
             'image': self.image,
             'summary': self.summary,
+            'encGzhUrl': self.encGzhUrl,
+            'openid': self.openid,
             'subscribeDate': self.subscribeDate,
             'articles_count': self.articles.count()
         }
@@ -164,7 +167,12 @@ class Mp(db.Model):
         Mps = []
         for mp in mps:
 #        	print mp
-        	Mps.append( Mp(mpName=mp['mpName'], image=mp['image'], weixinhao=mp['weixinhao'] ) )
+        	Mps.append( Mp(mpName=mp['mpName'], 
+        		image=mp['image'], 
+        		weixinhao=mp['weixinhao'],
+        		encGzhUrl=mp['encGzhUrl'],
+        		openid=mp['openid'],
+        		) )
         return Mps
 
     @property	# for Flask-Admin column_formatters use
@@ -199,30 +207,33 @@ class Article(db.Model):
     __tablename__ = 'articles'
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.Text)
-    image = db.Column(db.Text)
-    summary = db.Column(db.Text)
-    url = db.Column(db.Text)
-    timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
+    author = db.Column(db.Text)
+    source_url = db.Column(db.Text)
+    content_url = db.Column(db.Text)
+    timestamp = db.Column(db.Integer)
+    last_sync = db.Column(db.DateTime(), default=datetime.utcnow)
+    cover = db.Column(db.Text)
+    digest = db.Column(db.Text)
+    body_html = db.Column(db.Text)
+    fileid = db.Column(db.Integer)
+    
     mp_id = db.Column(db.Integer, db.ForeignKey('mps.id'))
 
     def to_json(self):
         json_article = {
-            'url': url_for('api.get_comment', id=self.id, _external=True),
-            'post': url_for('api.get_post', id=self.post_id, _external=True),
-            'body': self.body,
-            'body_html': self.body_html,
+            'title': self.title,
+            'content_url': self.content_url,
+            'cover': self.cover,
+            'digest': self.digest,
+            'fileid': self.fileid,
             'timestamp': self.timestamp,
-            'author': url_for('api.get_user', id=self.author_id,
-                              _external=True),
         }
         return json_article
 
     @staticmethod
-    def from_json(json_comment):
-        body = json_comment.get('body')
-        if body is None or body == '':
-            raise ValidationError('comment does not have a body')
-        return Comment(body=body)
+    def from_json(article_json):
+        title = article_json.get('title')
+        return Article(title=title)
 
     def __repr__(self):
     	return '<Article-%d %s>' % (self.id, self.title)

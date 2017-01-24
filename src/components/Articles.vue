@@ -1,15 +1,10 @@
 <template>
     <div class="card">
         <div class="card-header" align="center">
-            <form class="form-inline" @submit.prevent>
-                <input class="form-control form-control-lg wide" v-model="searchInput" type="text"
-                       @keyup.enter="searchMp(1)" placeholder="搜索公众号">
-                <button type="button" class="btn btn-outline-success btn-lg" :disabled="searchInput==''"
-                        @click="searchMp(1)" ><i class="fa fa-search"></i></button>
-            </form>
+		<h5 align="center" class="text-muted">我订阅的公众号文章集合</h5>
         </div>
         <div class="card-block" v-if="!isSearching && !searchResultJson">
-            <h5 align="center" class="text-muted">输入关键字，搜索公众号</h5>
+            <h5 align="center" class="text-muted"> from LS </h5>
         </div>
         <div class="card-block" v-if="searchResultJson">
             <h6 align="center" class="text-muted">"{{ searchKey}}" 搜索到{{searchResultJson.totalItems}}条结果，共{{searchResultJson.totalPages}}页</h6>
@@ -143,7 +138,6 @@
                         mpResult['date'] = xmlDoc.getElementsByTagName("date")[1].childNodes[0].nodeValue;
                         mpResult['image'] = xmlDoc.getElementsByTagName("image")[0].childNodes[0].nodeValue;
                         mpResult['weixinhao'] = xmlDoc.getElementsByTagName("weixinhao")[0].childNodes[0].nodeValue;
-                        mpResult['openid'] = xmlDoc.getElementsByTagName("id")[0].childNodes[0].nodeValue;
                         var rank = xmlDoc.getElementsByTagName("rank")[0].attributes;
                         mpResult['rank'] = {};
                         mpResult['rank']['fans'] = rank.fans.nodeValue;	// 粉丝数
@@ -175,14 +169,13 @@
                     // 删除该公众号
                     return this.$store.dispatch('unsubSearchResult',this.mpList[idx].weixinhao);
                 }
-			// 如果Mp添加了新的属性，在这里增加
+
                 var mp = {
                     mpName : this.mpList[idx].title,
                     image : this.mpList[idx].image,
                     date : this.mpList[idx].date,	// 最近更新
                     weixinhao : this.mpList[idx].weixinhao,
                     encGzhUrl : this.mpList[idx].encGzhUrl,
-                    openid : this.mpList[idx].openid,
                     subscribeDate : new Date().getTime(),
                     showRemoveBtn: false
                 };
