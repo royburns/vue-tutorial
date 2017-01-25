@@ -34,7 +34,8 @@ def article_search(app, db, weixinhao):
 	with app.app_context():
 		# Mp object不能带到Thread中，需要重新query一下
 		mp = db.session.query(Mp).filter(Mp.weixinhao == weixinhao).first()
-		print '========= seaching articles of MP: ', mp.mpName
+		try: print '========= seaching articles of MP: ', mp.mpName
+		except: print '========= seaching articles of MP: ', mp.weixinhao
 		s = requests.Session()
 		search_url = 'http://weixin.sogou.com/weixinwap?page=1&_rtype=json&ie=utf8&type=1&query=%s' % mp.weixinhao
 		encGzhUrl = mp.encGzhUrl

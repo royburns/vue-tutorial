@@ -234,6 +234,7 @@
                             'username': this.username,
                             'token': this.token
                         };
+                        window.localStorage.clear();
                         window.localStorage.setItem("user", JSON.stringify(userData));
                     }, (response) => {
                         // 响应错误回调
@@ -250,7 +251,8 @@
                     this.is_login = false;
                     this.password = '';
                     this.token = '';
-                    window.localStorage.removeItem("user")
+         //           window.localStorage.removeItem("user")
+         		window.localStorage.clear()
                 }, (response) => {
                     // 响应错误回调
                     alert('Logout出错了！ ' + JSON.stringify(response))
