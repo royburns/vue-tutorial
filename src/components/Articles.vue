@@ -1,47 +1,29 @@
 <template>
     <div class="card">
         <div class="card-header" align="center">
-		<h5 align="center" class="text-muted">我订阅的公众号文章集合</h5>
+		<h5 align="center" class="text-muted">订阅公众号 最新文章集合</h5>
         </div>
-        <div class="card-block" v-if="!isSearching && !searchResultJson">
-            <h5 align="center" class="text-muted"> from LS </h5>
-        </div>
-        <div class="card-block" v-if="searchResultJson">
-            <h6 align="center" class="text-muted">"{{ searchKey}}" 搜索到{{searchResultJson.totalItems}}条结果，共{{searchResultJson.totalPages}}页</h6>
-        </div>
-        <div class="card-block">
-            <div class="media" v-for="(mp,index) in mpList">
+                <div class="card-block" v-if="articleList.length==0">
+            		<h6 align="center" class="text-muted">请点击导航栏里订阅的公众号，查看公众号的文章列表</h6>
+        		</div>
+        <div class="card-block" v-else>
+            <div class="media" v-for="(article, index) in articleList">
                 <div class="media-left imgbox">
-                    <a class="" href="#">
-                        <img class="media-object rounded " :src="mp.image" style="margin-top: 5px;">
-                    </a></div>
+                        <img class="media-object rounded " :src=" 'http://read.html5.qq.com/image?src=forum&q=5&r=0&imgflag=7&imageUrl=' + article.cover" style="margin-top: 5px;">
+			</div>
                 <div class="media-body">
-                    <a :href="mp.encGzhUrl" target="_blank" class="nav-link"><h5 v-html="mp.name"></h5></a>
-                    <p class="" style="margin-bottom: 0px;"><small> 简介：</small><small v-html="mp.summary"></small></p>
+                    <a :href="article.content_url" target="_blank" class="nav-link"><h5 v-html="article.title"></h5></a>
                     <p class="text-muted" style="margin-bottom: 0px;">
-                        <a href="javascript:" @click="subscribe(index)">
-                            <i class="fa fa-lg float-xs-right"
-                               :class="{'fa-star text-danger': mp.isSubscribed, 'fa-star-o text-muted': !mp.isSubscribed,}"></i></a>
-                        <small title="粉丝" class="s1"><i class="fa fa-heart-o"></i> {{ mp.rank.fans }} </small>
-                        <small title="月平均发表文章" class="s1"><i class="fa fa-file-text-o"></i> {{ mp.rank.pnum }}</small>
-                        <small title="平均阅读次数" class="s1"><i class="fa fa-eye"></i> {{ mp.rank.rnum }}</small>
-                        <small  title="最近更新" class=" s2"> <i class="fa fa-clock-o"></i> {{ mp.date }} </small></p>
+                        <small  title="发表于" class=" s1"> <i class="fa fa-clock-o"></i> {{ formatDate(article.timestamp) }} </small>
+    				<small  class=" s2"> <i class="fa fa-flag"></i> {{ article.mpName }} </small></p>
                     <p class="text-muted" style="margin-bottom: 30px;"> <small class="text-muted s1">
-                        <a :href="mp.url" target="_blank" class="nav-link">{{ mp.title1}}</a>
-                        <span v-html="mp.content"></span> </small> </p>
+                        <span v-html="article.digest"></span> </small> </p>
                 </div>
             </div>
+    		</div>
+
         </div>
-        <div class="card-block" v-if="isSearching">
-            <h5 align="center"><i class="fa fa-spinner fa-spin fa-lg fa-fw"></i> 正在搜索公众号</h5>
-        </div>
-        <div class="card card-block text-xs-right" v-if="hasNextPage && searchResultJson && !isSearching">
-            <h5 class="btn btn-outline-success btn-block" @click="searchMp(page)"> 下一页 ({{page}})
-                <i class="fa fa-angle-double-right"></i></h5>
-        </div>
-        <div class="card card-block text-xs-right" v-if="!hasNextPage && searchResultJson">
-            <h5 class="btn btn-outline-success btn-block"> 最后一页了 <i class="fa fa-exclamation-triangle "></i></h5>
-        </div>
+
     </div>
 </template>
 
@@ -87,10 +69,40 @@
             mpList() {
                 // 从store中取出数据
                 return this.$store.state.mpList
+            },
+            articleList() {
+            	// TODO: use vuex, 从store中取出数据
+            	var storage = window.localStorage, data=[], mpName, articles;
+			 for(var i=0;i<storage.length;i++){
+			  //key(i)获得相应的键，再用getItem()方法获得对应的值
+			  if (storage.key(i).substr(0,10) == 'weixinhao_') {
+			  	  mpName = JSON.parse(storage.getItem(storage.key(i))).mpName;
+			  	  articles = JSON.parse(storage.getItem(storage.key(i))).articles
+				for (let item of articles) {
+					item['mpName'] = mpName
+					data.push(item)
+			 	}
+				}
+			}
+			// 对所有文章按更新日期排序
+			data.sort(function(a,b){
+            		return b.timestamp-a.timestamp});
+                	return data;
             }
-        },
+          },
         methods:{
-            searchMp(pg) {
+        	formatDate(timestamp) {
+            	var that = new Date(parseInt(timestamp)*1000), s;
+            	 var  y = that.getFullYear(),  
+            m = that.getMonth() + 1,  
+            d = that.getDate(),  
+            hh = that.getHours(),  
+            mm = that.getMinutes();  
+        s = y + '年';  
+        s = s + m + '月' + d + '日 ' + hh + ':' + (mm < 10 ? '0' : '') + mm;  
+                return s
+            },
+             searchMp(pg) {
                 this.isSearching = true;
                 if (pg==1) {
                     this.searchKey = this.searchInput;

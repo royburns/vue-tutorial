@@ -14,13 +14,17 @@ user_agent = {
     'User-agent': 'Mozilla/5.0 (Windows NT 5.1) AppleWebKit/537.36 (KHTML, like Gecko) Maxthon/4.0 Chrome/30.0.1599.101 Safari/537.36'}
 user_agent2 = { 'Content-Type': 'application/json'}
 
-def fetchArticle(mp):
+def fetchArticle(mp, sync):
 	app = current_app._get_current_object()
 	return_str = 'start to fetch MP: %s ...' % (mp.weixinhao)
 	try:
-		thr = Thread(target=article_search, args=[app, db, mp.weixinhao])
-		thr.start()
-		return ['ok', return_str]
+		if sync == 'async':
+			thr = Thread(target=article_search, args=[app, db, mp.weixinhao])
+			thr.start()
+			return ['ok', return_str]
+		else:
+			article_search(app, db, mp.weixinhao)
+			return ['ok', u'同步完成！']
 	except Exception, e:
 		print e
 		return ['nok', str(e)]
@@ -78,10 +82,19 @@ def article_search(app, db, weixinhao):
 			article['content_url'] = get_permanent_url(article['content_url'])
 			article['fileid'] = aa.get('fileid')
 #			print 'content_url:', article['content_url']
-			if db.session.query(Article).filter(Article.fileid == article['fileid']).first() == None:
+			article_row = db.session.query(Article).filter(Article.title == article['title']).first()
+#			print 'article_row.mp_id', article_row.mp_id, article_row.title
+			if article_row and article_row.mp_id is None:	# 有时候数据库里，有Article记录，但这些记录没有关联MP
+				db.session.query(Article).filter(Article.title == article['title']).update({
+                        	Article.mp_id: mp.id,
+				})
+			elif article_row is None:
+#			if db.session.query(Article).filter(Article.title == article['title']).first() == None:
+				try: print u'发现新的article:', article['title']
+				except: pass
 				db.session.add(Article(title=article['title'], cover=article['cover'], digest=article['digest'], timestamp=article['timestamp'], 
 					author=article['author'], source_url=article['source_url'], content_url=article['content_url'], fileid=article['fileid'], mp_id=mp.id, ))
-		    		db.session.commit()
+#		    		db.session.commit()
 	    		# 如果有嵌套的article:
 			if aa['app_msg_ext_info'].get('multi_app_msg_item_list'):
 				timestamp = article['timestamp']
@@ -91,10 +104,18 @@ def article_search(app, db, weixinhao):
 					except: pass
 					content_url = 'http://mp.weixin.qq.com' + HTMLParser().unescape(item['content_url']) + '&uin=%s'%uin
 					content_url = get_permanent_url(content_url)
-					if db.session.query(Article).filter(Article.fileid == article['fileid']).first() == None:
+					article_row = db.session.query(Article).filter(Article.title == item['title']).first()
+					if article_row and article_row.mp_id is None:	# 有时候数据库里，有Article记录，但这些记录没有关联MP
+						db.session.query(Article).filter(Article.title == item['title']).update({
+		                        	Article.mp_id: mp.id,
+						})
+					elif article_row is None:
+#					if db.session.query(Article).filter(Article.title == item['title']).first() == None:
 						db.session.add(Article(title=item['title'], cover=item['cover'], digest=item['digest'], timestamp=timestamp,
 							author=item['author'], source_url=item['source_url'], fileid=item['fileid'], content_url=content_url, mp_id=mp.id, ))
-				    		db.session.commit()
+			db.session.commit()
+		db.session.query(Mp).filter(Mp.weixinhao == mp.weixinhao).update({Mp.sync_time:datetime.utcnow() })
+		db.session.commit()
 		return True
 
 def get_permanent_url(pre_redirect_url):

@@ -1,26 +1,27 @@
 <template>
     <div class="card">
         <div class="card-header" align="center">
-		<h5 align="center" class="text-muted">公众号[{{ $route.params.mpName || articleList.mpName ||  ''}}] - 文章列表
-	<a href="javascript:" @click="updateArticle(articleList.weixinhao, articleList.mpName)" title="从搜狗更新文章列表"><i class="fa fa-refresh fa-lg fa-fw" :class="{'fa-spin':isFetching}"></i></h5>
+		<h5 align="center" class="text-muted">我订阅的公众号文章集合</h5>
         </div>
-                <div class="card-block" v-if="articleList.articles.length==0">
+                <div class="card-block" v-if="articleList.length==0">
             		<h6 align="center" class="text-muted">请点击导航栏里订阅的公众号，查看公众号的文章列表</h6>
         		</div>
         <div class="card-block" v-else>
-				<p align="center"><small class="text-muted">上次更新：{{ formatDate(articleList.sync_time) }}</small><p>
-            <div class="media" v-for="(article,index) in articleList.articles">
+    		<div v-for="(articles, index) in articleList">
+            <div class="media" v-for="article in articles">
                 <div class="media-left imgbox">
                         <img class="media-object rounded " :src=" 'http://read.html5.qq.com/image?src=forum&q=5&r=0&imgflag=7&imageUrl=' + article.cover" style="margin-top: 5px;">
 			</div>
                 <div class="media-body">
                     <a :href="article.content_url" target="_blank" class="nav-link"><h5 v-html="article.title"></h5></a>
                     <p class="text-muted" style="margin-bottom: 0px;">
-                        <small  title="发表于" class=" s1"> <i class="fa fa-clock-o"></i> {{ formatDate(article.timestamp) }} </small></p>
+                        <small  title="发表于" class=" s1"> <i class="fa fa-clock-o"></i> {{ formatDate(article.timestamp) }} </small>
+    				<small  class=" s2"> <i class="fa fa-flag"></i> {{ index }} </small></p>
                     <p class="text-muted" style="margin-bottom: 30px;"> <small class="text-muted s1">
                         <span v-html="article.digest"></span> </small> </p>
                 </div>
             </div>
+    		</div>
 
         </div>
 
@@ -57,7 +58,6 @@
                 searchInput: '',    // 输入框的值
                 searchResultJson: '',
                 isSearching: false,
-                	isFetching: false,
                 page: 1,
                 hasNextPage: true
             }
@@ -71,17 +71,19 @@
                 // 从store中取出数据
                 return this.$store.state.mpList
             },
-	       token() {
-	                   if (window.localStorage.getItem("user")) return JSON.parse(window.localStorage.getItem("user")).token
-	                   	   else return ''
-	            },
             articleList() {
             	// TODO: use vuex, 从store中取出数据
-            	var data = JSON.parse(window.localStorage.getItem('weixinhao_'+this.$route.params.id));
-			if (data == null) return {'mpName':'', 'articles': [] };
-            	else {
+            	var storage = window.localStorage, data={}, mpName;
+			 for(var i=0;i<storage.length;i++){
+			  //key(i)获得相应的键，再用getItem()方法获得对应的值
+			  if (storage.key(i).substr(0,10) == 'weixinhao_') {
+			  	  mpName = JSON.parse(storage.getItem(storage.key(i))).mpName;
+//			  	  console.log(mpName);
+//			  	data = data.concat(JSON.parse(storage.getItem(storage.key(i))).articles)
+				data[mpName] = JSON.parse(storage.getItem(storage.key(i))).articles;
+			 }
+			}
                 		return data;
-                	}
             }
           },
         methods:{
@@ -96,48 +98,6 @@
         s = s + m + '月' + d + '日 ' + hh + ':' + (mm < 10 ? '0' : '') + mm;  
                 return s
             },
-	updateArticle(weixinhao, mpName) {
-            this.isFetching = true;
-            this.$nextTick(function () { });
-            this.$http.get('/api/v1.0/articles', {
-            	params: {
-                        	weixinhao: weixinhao,
-                        	action: 'sync'
-                    },
-                    headers: {
-                        'Content-Type': 'application/json; charset=UTF-8',
-                        'Authentication-Token': this.token
-                    }
-                }).then((response) => {
-                    // 响应成功回调
-    			this.isFetching = false;
-                   var data = response.body, article_data;
-//                   alert('文章 from server：\n' + JSON.stringify(data));
-                    if (! data.status == 'ok') {
- 				return alert('获取失败，请重新上传订阅列表！\n' +data.status)
-                	}
-     		article_data = {
-     			'mpName': mpName,
-     			'weixinhao': weixinhao,
-     			'articles': data.articles,
-     			'sync_time': data.sync_time
-     			}
-			window.localStorage.setItem('weixinhao_'+weixinhao, JSON.stringify(article_data));
-			// TODO: 这里可能用 vuex更好一点
-			// this.articleList = article_data;
-			// 必须要命名route name，否则，地址会不停地往后加 /article/XXX, /article/article/XXX
-			//return this.$router.push({ name: 'article', params: { id: weixinhao, mpName: mpName }})
-                }, (response) => {
-                    // 响应错误回调
-                    alert('同步出错了！ ' + JSON.stringify(response))
-                    if (response.status == 401) {
-                        alert('登录超时，请重新登录');
-                        this.is_login = false;
-                        this.password = '';
-                        window.localStorage.removeItem("user")
-                    }
-                });
-	       },        		
              searchMp(pg) {
                 this.isSearching = true;
                 if (pg==1) {

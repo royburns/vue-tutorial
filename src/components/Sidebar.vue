@@ -39,8 +39,9 @@
         <div class="card-block">
             <p v-for="(mp, idx) in subscribeList" @mouseover="showRemove(idx)" @mouseout="hideRemove(idx)">
                 <small>
-    				<a href="javascript:" class="nav-link" @click="fetchArticles(mp.weixinhao, mp.mpName)">
+    				<a href="javascript:" class="nav-link" @click="fetchArticles(mp.weixinhao, mp.mpName)" title="获取服务器上文章列表">
     					<img :src="mp.image" class="mpavatar img-circle img-responsive" /> {{ mp.mpName }} </a>
+    				<i :class="{'fa fa-spinner fa-spin fa-lg fa-fw': isFetching}"></i>
                     <a href="javascript:" @click="unsubscribeMp(mp.weixinhao)">
                         <i class="fa fa-lg float-xs-right text-danger sidebar-remove"
                            :class="{'fa-minus-circle': mp.showRemoveBtn}"></i></a></small>
@@ -58,10 +59,12 @@
                 is_login: false,
                 username: '',
                 password: '',
-                token: ''
+                token: '',
+                	isFetching: false,
             }
         },
         created: function() {
+      //  	window.localStorage.setItem("isFetching", false);
             // 从LocalStorage中取出数据
             if (window.localStorage.getItem("user")) {
                 var userData = JSON.parse(window.localStorage.getItem("user"));
@@ -86,6 +89,8 @@
         methods: {
         	fetchArticles(weixinhao, mpName){
 //        		return this.$router.push({ name: 'article', params: { id: weixinhao }})
+            this.isFetching = true;
+            this.$nextTick(function () { });
             this.$http.get('/api/v1.0/articles', {
                     params: {
                         email: this.username,
@@ -97,12 +102,18 @@
                     }
                 }).then((response) => {
                     // 响应成功回调
-                    var data = response.body, article_data;
-     //               alert('文章 from server：\n' + JSON.stringify(data));
+    			this.isFetching = false;
+    			this.$nextTick(function () { });
+                   var data = response.body, article_data;
+                    if (!data.status == 'ok') {
+ //                   return alert('文章 from server：\n' + JSON.stringify(data));
+ 				return alert('获取失败，请重新上传订阅列表！\n' +data.status)
+                	}
      		article_data = {
      			'mpName': mpName,
      			'weixinhao': weixinhao,
-     			'articles': data
+     			'articles': data.articles,
+     			'sync_time': data.sync_time
      			}
 			window.localStorage.setItem('weixinhao_'+weixinhao, JSON.stringify(article_data));
 			// 必须要命名route name，否则，地址会不停地往后加 /article/XXX, /article/article/XXX
