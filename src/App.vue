@@ -19,7 +19,7 @@
     <form class="form-inline my-2 my-lg-0">
       <input class="form-control mr-sm-2" type="text" placeholder="搜索公众号">
       <router-link to="/search"><i class="fa fa-search btn btn-outline-success my-2 my-sm-0" @click=""></i></router-link>
-	<a href="/admin" title="后台管理"><i class="fa fa-user-o btn btn-outline-success"></i>
+	<a href="/admin" title="后台管理"><i class="fa fa-user-o btn btn-outline-success"></i></a>
     </form>
   </div>
 </nav>

@@ -2,7 +2,7 @@
     <div class="card">
         <div class="card-header" align="center">
 		<h5 align="center" class="text-muted">公众号[{{ $route.params.mpName || articleList.mpName ||  ''}}] - 文章列表
-	<a href="javascript:" @click="updateArticle(articleList.weixinhao, articleList.mpName)" title="从搜狗更新文章列表"><i class="fa fa-refresh fa-lg fa-fw" :class="{'fa-spin':isFetching}"></i></h5>
+	<a href="javascript:" @click="updateArticle(articleList.weixinhao, articleList.mpName)" title="从搜狗更新文章列表"><i class="fa fa-refresh fa-lg fa-fw" :class="{'fa-spin':isFetching}"></i></a></h5>
         </div>
                 <div class="card-block" v-if="articleList.articles.length==0">
             		<h6 align="center" class="text-muted">请点击导航栏里订阅的公众号，查看公众号的文章列表</h6>
