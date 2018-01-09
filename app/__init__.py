@@ -14,7 +14,7 @@ db = SQLAlchemy()
 from .models import User, Role
 
 user_datastore = SQLAlchemyUserDatastore(db, User, Role)
-security = Security(datastore=user_datastore)
+security = Security()
 
 # Create admin
 admin = Admin(name=u'简读Admin')
@@ -25,7 +25,7 @@ def create_app(config_name):
 	config[config_name].init_app(app)
 
 	db.init_app(app)
-	security.init_app(app)
+	security.init_app(app, datastore=user_datastore)
 	admin.init_app(app)
 
 	from .main import main as main_blueprint
